@@ -2,7 +2,7 @@
 from PIL import Image
 import ImageDraw, ImageFont
 import numpy as np
-# def draw (text,  size,  color='white') :
+
 text='A'
 size=32
 color='white'
@@ -20,4 +20,4 @@ draw.text((padding, -padding), text, font=font, fill=color)
 x=np.array(img)
 img.show()
 
-# drawC = draw('hello', 40)#,  'blue')
+print("Just a demo; The ocr data is created on the fly when training")

@@ -5,19 +5,14 @@ import sys
 reload(sys)  
 sys.setdefaultencoding('utf8')
 
-# >>> sys.getdefaultencoding()
-# 'utf8'
-
 import os
 import re
 import shutil
 
 from extension_functions import *
 
-# import exceptions
 # import builtins
 # import __builtin__
-
 
 def xx(y):
   if isinstance(y,list):  return xlist(y)

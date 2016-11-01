@@ -1,25 +1,36 @@
 from random import randint
 from PIL import Image
 import ImageDraw, ImageFont
+import os
 import numpy
 import numpy as np
 from extensions import *
 min_size=8#8#12
 max_size=28 #48
 max_padding=2
-extra_y = 0 # 10
+extra_y = 0 # 10 # for oversized letters g,...
 sizes=range(min_size,max_size)
 if min_size==max_size: sizes=[min_size]
-# min_char=48
 min_char=32
-# letterz=map(chr, range(min_char, 58))
 letterz=map(chr, range(min_char, 128))
 max_angle=30#40
 styles=['regular','light','medium','bold','italic']#,'underline','strikethrough']
 # Regular Medium Heavy Demi 'none','normal', Subsetted Sans
 # fonts=['Arial.ttf']
-fonts_dir="/data/fonts/Normal/"
-fonts=readlines(fonts_dir+"fonts.list")
+fonts_dir="/data/fonts/normal/"
+os.system("mdfind -name '.ttf' | grep '.ttf$' |grep -v 'Noto\|NISC' > fonts.list")
+fonts=readlines("fonts.list")
+# copy all 'good' fonts to one directory if you want
+# os.system("mkdir -p "+fonts_dir)
+# fonts=readlines(fonts_dir+"fonts.list")
+
+if False:# check_fonts:
+	for font in fonts:
+		try:
+			ImageFont.truetype(font, max_size)
+		except:
+			print("BAD font "+font)
+			fonts.remove(font)
 
 class letter_batch():
 
@@ -119,12 +130,13 @@ class letter():
 		return np.array(self.image())
 
 	def image(self):
-		fontPath = fonts_dir+self.font
+		fontPath = self.font
+		# fontPath = fonts_dir+self.font
 		try:
 			ttf_font = ImageFont.truetype(fontPath, self.size)
 		except:
-			print("BAD FONG"+fontPath)
-			return
+			raise Exception("BAD FONT: "+fontPath)
+
 		padding = self.pos
 		text = self.char
 		size = ttf_font.getsize(text)

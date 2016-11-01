@@ -83,8 +83,10 @@ def length(self):
 
 def say(x):
     print(x) 
-    import os
     os.system("say '%s'"%x)
+
+def bash(x):
+    os.system(x)
 
 def beep():
     print("\aBEEP ")
