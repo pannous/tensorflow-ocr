@@ -24,7 +24,7 @@ fonts_dir="/data/fonts/normal/"
 if platform == "darwin":
 	os.system("mdfind -name '.ttf' | grep '.ttf$' |grep -v 'Noto\|NISC' > fonts.list")
 else:
-	os.system("locate '.ttf' | grep '.ttf$' |grep -v 'Noto\|NISC' > fonts.list")
+	os.system("locate '.ttf' | grep '.ttf$' |grep -v 'mstt' > fonts.list")
 
 fonts=readlines("fonts.list")
 
