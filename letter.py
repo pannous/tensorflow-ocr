@@ -40,6 +40,7 @@ if platform != "darwin":
 	for font in fonts:
 		try:
 			ImageFont.truetype(font, max_size)
+			ImageFont.truetype(font, min_size)
 		except:
 			print("BAD font "+font)
 			fonts.remove(font)
