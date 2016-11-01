@@ -35,13 +35,16 @@ fonts=readlines("fonts.list")
 styles=['regular','light','medium','bold','italic']#,'underline','strikethrough']
 # Regular Medium Heavy Demi 'none','normal', Subsetted Sans
 
-if False:# check_fonts:
+# def check_fonts():
+if platform != "darwin":
 	for font in fonts:
 		try:
 			ImageFont.truetype(font, max_size)
 		except:
 			print("BAD font "+font)
 			fonts.remove(font)
+
+
 
 class letter_batch():
 
