@@ -2,6 +2,7 @@ from random import randint
 from PIL import Image
 import ImageDraw, ImageFont
 import os
+# import os.path
 import numpy
 import numpy as np
 from sys import platform
@@ -18,25 +19,18 @@ letterz=map(chr, range(min_char, 128))
 max_angle=30#40
 
 
-# fonts=['Arial.ttf']
-fonts_dir="/data/fonts/normal/"
 
-if platform == "darwin":
-	os.system("mdfind -name '.ttf' | grep '.ttf$' |grep -v 'Noto\|NISC' > fonts.list")
-else:
-	os.system("locate '.ttf' | grep '.ttf$' |grep -v 'mstt' > fonts.list")
-
-fonts=readlines("fonts.list")
+def find_fonts():
+	if platform == "darwin":
+		os.system("mdfind -name '.ttf' | grep '.ttf$' |grep -v 'Noto\|NISC' > fonts.list")
+	else:
+		os.system("locate '.ttf' | grep '.ttf$' |grep -v 'mstt' > fonts.list")
 
 # copy all 'good' fonts to one directory if you want
 # os.system("mkdir -p "+fonts_dir)
-# fonts=readlines(fonts_dir+"fonts.list")
 
-styles=['regular','light','medium','bold','italic']#,'underline','strikethrough']
-# Regular Medium Heavy Demi 'none','normal', Subsetted Sans
 
-# def check_fonts():
-if platform != "darwin":
+def check_fonts():
 	for font in fonts:
 		try:
 			ImageFont.truetype(font, max_size)
@@ -45,6 +39,16 @@ if platform != "darwin":
 			print("BAD font "+font)
 			fonts.remove(font)
 
+if not os.path.exists("fonts.list"):
+	find_fonts()
+
+fonts_dir="/data/fonts/"
+fonts=readlines("fonts.list")
+# fonts=['Arial.ttf']
+# check_fonts()
+
+styles=['regular','light','medium','bold','italic']
+# Regular Medium Heavy Demi 'none','normal', Subsetted Sans #,'underline','strikethrough']
 
 
 class letter_batch():
@@ -145,8 +149,7 @@ class letter():
 		return np.array(self.image())
 
 	def image(self):
-		fontPath = self.font
-		# fontPath = fonts_dir+self.font
+		fontPath = self.font if '/' in self.font else fonts_dir+self.font
 		try:
 			ttf_font = ImageFont.truetype(fontPath, self.size)
 		except:

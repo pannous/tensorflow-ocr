@@ -1,9 +1,13 @@
 # encoding: utf-8
 # nocoding: interpy "string interpolation #{like ruby}"
 # encoding=utf8  
-import sys  
-reload(sys)  
-sys.setdefaultencoding('utf8')
+
+try: # py2
+  import sys  
+  reload(sys)  
+  sys.setdefaultencoding('utf8')
+except:
+  pass
 
 import os
 import re
