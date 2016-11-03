@@ -6,7 +6,7 @@ import letter
 
 data = letter.batch()
 
-learning_rate = 0.001
+learning_rate = 0.01
 training_iters = 300000
 batch_size = 64
 
@@ -57,11 +57,11 @@ def alex(net):
 
 # net=layer.net(baseline, data, learning_rate=0.001)
 # net=layer.net(alex,data, learning_rate=0.001) # NOPE!?
-net=layer.net(denseConv,data, learning_rate=0.01 )
+net=layer.net(denseConv,data, learning_rate=0.001 )
 
 # net.train(steps=50000,dropout=0.6,display_step=1,test_step=1) # debug
 # net.train(steps=50000,dropout=0.6,display_step=5,test_step=20) # test
-net.train(data=data, steps=50000, dropout=0.6, display_step=10, test_step=100) # run
+net.train(data=data, steps=500000, dropout=0.6, display_step=10, test_step=100) # run
 # net.predict() # nil=random
 # net.generate(3)  # nil=random
 
