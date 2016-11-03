@@ -2,25 +2,20 @@ from __future__ import print_function
 import tensorflow as tf
 import os
 import numpy as np
-# import input_data
-# from neural_optimizer import *
+from tensorboard_util import *
 
-tensorboard_logs = '/tmp/tensorboard_logs/'
-run_nr=0
-if run_nr==0:
-	os.system("rm -rf "+tensorboard_logs ) #! careful
-	os.system("mkdir "+tensorboard_logs )
-tensorboard_logs = tensorboard_logs +'run'+str(run_nr)
-print("RUN NUMBER "+str(run_nr))
+# clear_tensorboard()
+set_tensorboard_run(auto_increment=True)
+run_tensorboard(restart=False)
 
 # gpu = True
 gpu = False
 debug = True # histogram_summary ...
 slim = tf.contrib.slim
 weight_divider=10000.
-default_learning_rate=0.001
-decay_steps = 10000
-decay_size = 0.95
+default_learning_rate=0.01
+decay_steps = 1000
+decay_size = 0.1
 
 
 def nop():return 0
@@ -31,8 +26,6 @@ def closest_unitary(A):
   V, __, Wh = scipy.linalg.svd(A)
   return np.matrix(V.dot(Wh))
 
-# rm -r /tmp/tensorboard_logs/run
-# $(sleep 5; open http://0.0.0.0:6006) & tensorboard --debug --logdir=/tmp/tensorboard_logs/
 _cpu='/cpu:0'
 class net():
 
@@ -147,27 +140,29 @@ class net():
 			test_op=batch_norm(input, is_training=False, updates_collections=None, center=False,scope=scope, reuse=True)
 			self.add(tf.cond(self.train_phase,lambda:train_op,lambda:test_op))
 
-	def addLayer(self,nChannels, nOutChannels, dropRate):
+	def addLayer(self, nChannels, nOutChannels, do_dropout):
 		ident=self.last_layer
 		self.batchnorm()
 		# self.add(tf.nn.relu(ident)) # nChannels ?
-		self.conv([3,3,nChannels,nOutChannels],pool=False,dropout=dropRate,norm=tf.nn.relu)#None
+		self.conv([3,3,nChannels,nOutChannels], pool=False, dropout=do_dropout, norm=tf.nn.relu)#None
 		concat = tf.concat(3, [ident, self.last_layer])
 		print("concat ",concat.get_shape())
 		self.add(concat)
 
-	def addTransition(self, nChannels, nOutChannels, dropRate):
+	def addTransition(self, nChannels, nOutChannels, do_dropout):
 		self.batchnorm()
 		self.add(tf.nn.relu(self.last_layer))
-		self.conv([1,1, nChannels, nOutChannels], pool=True, dropout=dropRate, norm=None) # pool (2, 2)
+		self.conv([1,1, nChannels, nOutChannels], pool=True, dropout=do_dropout, norm=None) # pool (2, 2)
 		# self.add(tf.nn.SpatialConvolution(nChannels, nOutChannels, 1, 1, 1, 1, 0, 0))
 
 	# Densely Connected Convolutional Networks https://arxiv.org/abs/1608.06993
 	def buildDenseConv(self):
-		depth = 3 * 1 + 4
+		blocks = 2
+		depth = 3 * blocks + 4
 		if  (depth - 4) % 3 :  raise Exception("Depth must be 3N + 4! (4,7,10,...) ")  # # layers in each denseblock
 		N = (depth - 4) / 3
-		dropRate = None # nil to disable dropout, non - zero number to enable dropout and set drop rate
+		do_dropout = True# None  nil to disable dropout, non - zero number to enable dropout and set drop rate
+		# dropRate = self.keep_prob # nil to disable dropout, non - zero number to enable dropout and set drop rate
 		# # channels before entering the first denseblock ??
 		# set it to be comparable with growth rate ??
 		nChannels = 16
@@ -176,17 +171,17 @@ class net():
 		# self.add(tf.nn.SpatialConvolution(3, nChannels, 3, 3, 1, 1, 1, 1))
 
 		for i in range(N):
-			self.addLayer(nChannels, growthRate, dropRate)
+			self.addLayer(nChannels, growthRate, do_dropout)
 			nChannels = nChannels + growthRate
-		self.addTransition(nChannels, nChannels, dropRate)
+		self.addTransition(nChannels, nChannels, do_dropout)
 
 		for i in range(N):
-			self.addLayer(nChannels, growthRate, dropRate)
+			self.addLayer(nChannels, growthRate, do_dropout)
 			nChannels = nChannels + growthRate
-		self.addTransition(nChannels, nChannels, dropRate)
+		self.addTransition(nChannels, nChannels, do_dropout)
 
 		for i in range(N):
-			self.addLayer(nChannels, growthRate, dropRate)
+			self.addLayer(nChannels, growthRate, do_dropout)
 			nChannels = nChannels + growthRate
 
 		self.batchnorm()
@@ -296,7 +291,8 @@ class net():
 			with tf.device(_cpu):tf.scalar_summary('cost', self.cost)
 			# self.cost = tf.Print(self.cost , [self.cost ], "debug cost : ")
 			# learning_scheme=self.learning_rate
-			learning_scheme=tf.train.exponential_decay(self.learning_rate, self.global_step, decay_steps, decay_size)
+			learning_scheme=tf.train.exponential_decay(self.learning_rate, self.global_step, decay_steps, decay_size,staircase=True)
+			with tf.device(_cpu):tf.scalar_summary('learning_rate', learning_scheme)
 			self.optimizer = tf.train.AdamOptimizer(learning_scheme).minimize(self.cost)
 			# self.optimizer = NeuralOptimizer(data=None, learning_rate=0.01, shared_loss=self.cost).minimize(self.cost) No good
 
@@ -330,7 +326,7 @@ class net():
 		# t = tf.verify_tensor_all_finite(t, msg)
 		tf.add_check_numerics_ops()
 		self.summaries = tf.merge_all_summaries()
-		self.summary_writer = tf.train.SummaryWriter(tensorboard_logs, session.graph) #
+		self.summary_writer = tf.train.SummaryWriter(current_logdir(), session.graph) #
 		if not dropout:dropout=1. # keep all
 		x=self.x
 		y=self.y
