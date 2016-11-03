@@ -1,5 +1,5 @@
 # layer
 
-internal tensorflow custom convenience comfort wrapper
+Internal tensorflow custom convenience comfort wrapper.
 
-used in https://github.com/pannous/tensorflow-ocr so far
+Used in https://github.com/pannous/tensorflow-ocr so far ...
