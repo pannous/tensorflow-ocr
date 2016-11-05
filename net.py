@@ -12,9 +12,9 @@ run_tensorboard(restart=False)
 gpu = False
 debug = True # histogram_summary ...
 slim = tf.contrib.slim
-weight_divider=10000.
-default_learning_rate=0.01
-decay_steps = 1000
+weight_divider=10.
+default_learning_rate=0.01 #  mostly overwritten, so ignore it
+decay_steps = 100000
 decay_size = 0.1
 
 
@@ -49,7 +49,8 @@ class net():
 			# self.batch_size=batch_size
 			self.layers=[]
 			self.learning_rate=learning_rate
-			# if not name: name=model.__name__
+			if not name: name=model.__name__
+			self.name=name
 			# if name and os.path.exists(name):
 			# 	return self.load_model(name)
 			self.generate_model(model)
@@ -332,6 +333,7 @@ class net():
 		x=self.x
 		y=self.y
 		keep_prob=self.keep_prob
+		saver = tf.train.Saver(tf.all_variables())
 		session.run([tf.initialize_all_variables()])
 		step = 0 # show first
 		while step < steps:
@@ -350,6 +352,9 @@ class net():
 				# self.summary_writer.add_summary(summary, step) # only test summaries for smoother curve
 				print("\rStep {:d} Loss= {:.6f} Accuracy= {:.3f}".format(step,loss,acc),end=' ')
 				if str(loss)=="nan": return print("\nLoss gradiant explosion, exiting!!!") #restore!
+			if step % 10 == 0:
+				saver.save(session, self.name+".ckpt", self.global_step)
+
 			step += 1
 		print("\nOptimization Finished!")
 		self.test(step,number=10000) # final test
