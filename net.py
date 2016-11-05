@@ -348,7 +348,6 @@ class net():
 			# Fit training using batch data
 			feed_dict = {x: batch_xs, y: batch_ys, keep_prob: dropout, self.train_phase: True}
 			loss,_= session.run([self.cost,self.optimizer], feed_dict=feed_dict)
-			if step % test_step == 0: self.test(step)
 			if step % display_step == 0:
 				# Calculate batch accuracy, loss
 				feed = {x: batch_xs, y: batch_ys, keep_prob: 1., self.train_phase: False}
@@ -356,6 +355,7 @@ class net():
 				# self.summary_writer.add_summary(summary, step) # only test summaries for smoother curve
 				print("\rStep {:d} Loss= {:.6f} Accuracy= {:.3f}".format(step,loss,acc),end=' ')
 				if str(loss)=="nan": return print("\nLoss gradiant explosion, exiting!!!") #restore!
+			if step % test_step == 0: self.test(step)
 			if step % 1000 == 0:
 				saver.save(session, self.name+".ckpt", self.global_step)
 
