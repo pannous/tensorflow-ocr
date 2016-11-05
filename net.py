@@ -13,7 +13,7 @@ gpu = False
 debug = True # histogram_summary ...
 slim = tf.contrib.slim
 weight_divider=10.
-default_learning_rate=0.01 #  mostly overwritten, so ignore it
+default_learning_rate=0.001 #  mostly overwritten, so ignore it
 decay_steps = 100000
 decay_size = 0.1
 
