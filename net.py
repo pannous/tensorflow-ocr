@@ -334,6 +334,10 @@ class net():
 		y=self.y
 		keep_prob=self.keep_prob
 		saver = tf.train.Saver(tf.all_variables())
+		checkpoint = tf.train.latest_checkpoint(".")
+		if checkpoint:
+			print("LOADING " + checkpoint)
+			saver.restore(session, checkpoint)
 		session.run([tf.initialize_all_variables()])
 		step = 0 # show first
 		while step < steps:
@@ -352,7 +356,7 @@ class net():
 				# self.summary_writer.add_summary(summary, step) # only test summaries for smoother curve
 				print("\rStep {:d} Loss= {:.6f} Accuracy= {:.3f}".format(step,loss,acc),end=' ')
 				if str(loss)=="nan": return print("\nLoss gradiant explosion, exiting!!!") #restore!
-			if step % 10 == 0:
+			if step % 1000 == 0:
 				saver.save(session, self.name+".ckpt", self.global_step)
 
 			step += 1
