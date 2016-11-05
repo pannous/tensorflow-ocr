@@ -6,8 +6,8 @@ import letter
 
 data = letter.batch()
 
-learning_rate = 0.01
-# learning_rate = 0.0003
+# learning_rate = 0.01
+learning_rate = 0.0003
 training_iters = 500000
 batch_size = 64
 
