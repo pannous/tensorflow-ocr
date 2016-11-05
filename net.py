@@ -165,7 +165,8 @@ class net():
 		# dropRate = self.keep_prob # nil to disable dropout, non - zero number to enable dropout and set drop rate
 		# # channels before entering the first denseblock ??
 		# set it to be comparable with growth rate ??
-		nChannels = 16
+		nChannels = 64
+		# nChannels = 16
 		growthRate = 12
 		self.conv([3,3,1,nChannels])
 		# self.add(tf.nn.SpatialConvolution(3, nChannels, 3, 3, 1, 1, 1, 1))
