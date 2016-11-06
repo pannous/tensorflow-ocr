@@ -17,6 +17,11 @@ default_learning_rate=0.001 #  mostly overwritten, so ignore it
 decay_steps = 100000
 decay_size = 0.1
 save_step=10000 #  if you don't want to save snapshots, set to -1
+checkpoint_dir="checkpoints"
+
+if not os.path.exists(checkpoint_dir):
+	os.makedirs(checkpoint_dir)
+
 
 def nop():return 0
 def closest_unitary(A):
@@ -335,7 +340,7 @@ class net():
 		keep_prob=self.keep_prob
 		saver = tf.train.Saver(tf.all_variables())
 		snapshot = self.name + str(get_last_tensorboard_run_nr())
-		checkpoint = tf.train.latest_checkpoint(".")
+		checkpoint = tf.train.latest_checkpoint(checkpoint_dir)
 		if resume and checkpoint:
 			print("LOADING " + checkpoint)
 			saver.restore(session, checkpoint)
@@ -359,7 +364,7 @@ class net():
 			if step % test_step == 0: self.test(step)
 			if step % save_step == 0 and step>0:
 				print("SAVING snapshot "+snapshot)
-				saver.save(session, snapshot + ".ckpt", self.global_step)
+				saver.save(session, checkpoint_dir+snapshot + ".ckpt", self.global_step)
 
 			step += 1
 		print("\nOptimization Finished!")
