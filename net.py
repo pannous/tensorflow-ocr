@@ -16,7 +16,7 @@ weight_divider=10.
 default_learning_rate=0.001 #  mostly overwritten, so ignore it
 decay_steps = 100000
 decay_size = 0.1
-save_step=10#000 #  if you don't want to save snapshots, set to -1
+save_step=10000 #  if you don't want to save snapshots, set to -1
 
 def nop():return 0
 def closest_unitary(A):
@@ -318,7 +318,7 @@ class net():
 			# 	return next(self.data.train)
 
 
-	def train(self,data=0,steps=-1,dropout=None,display_step=10,test_step=200,batch_size=10): #epochs=-1,
+	def train(self,data=0,steps=-1,dropout=None,display_step=10,test_step=200,batch_size=10,resume=False): #epochs=-1,
 		if data: self.data=data
 		steps = 9999999 if steps==-1 else steps
 		session=self.session
@@ -334,8 +334,9 @@ class net():
 		y=self.y
 		keep_prob=self.keep_prob
 		saver = tf.train.Saver(tf.all_variables())
+		snapshot = self.name + str(get_last_tensorboard_run_nr())
 		checkpoint = tf.train.latest_checkpoint(".")
-		if checkpoint:
+		if resume and checkpoint:
 			print("LOADING " + checkpoint)
 			saver.restore(session, checkpoint)
 		session.run([tf.initialize_all_variables()])
@@ -357,8 +358,8 @@ class net():
 				if str(loss)=="nan": return print("\nLoss gradiant explosion, exiting!!!") #restore!
 			if step % test_step == 0: self.test(step)
 			if step % save_step== 0:
-				print("saving snapshot")
-				saver.save(session, self.name+str(get_last_tensorboard_run_nr()) + ".ckpt", self.global_step)
+				print("SAVING snapshot "+snapshot)
+				saver.save(session, snapshot + ".ckpt", self.global_step)
 
 			step += 1
 		print("\nOptimization Finished!")
@@ -378,8 +379,6 @@ class net():
 		print('\t'*3+"Test Accuracy: ",accuracy)
 		self.summary_writer.add_run_metadata(run_metadata, 'step #%03d' % step)
 		self.summary_writer.add_summary(summary,global_step=step)
-
-
 
 	def inputs(self,data):
 		self.inputs, self.labels = load_data()#...)
