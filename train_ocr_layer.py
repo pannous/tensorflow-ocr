@@ -6,8 +6,8 @@ import letter
 
 data = letter.batch()
 
-# learning_rate = 0.01
-learning_rate = 0.0003
+learning_rate = 0.01
+# learning_rate = 0.0003
 training_iters = 500000
 batch_size = 64
 
@@ -39,7 +39,7 @@ def denseConv(net):
 	net.reshape(shape=[-1, 28, 28, 1])  # Reshape input picture
 	# net.conv([3, 3, 1, 64])
 	net.buildDenseConv()
-	net.dense(96*3)
+	# net.dense(96*3)
 	net.classifier() # 10 classes auto
 
 
@@ -63,6 +63,6 @@ net=layer.net(denseConv,data, learning_rate)
 
 # net.train(steps=50000,dropout=0.6,display_step=1,test_step=1) # debug
 # net.train(steps=50000,dropout=0.6,display_step=5,test_step=20) # test
-net.train(data=data, steps=training_iters, dropout=.7, display_step=10, test_step=100) # run
+net.train(data=data, steps=training_iters, dropout=.6, display_step=10, test_step=100) # run
 # net.predict() # nil=random
 # net.generate(3)  # nil=random
