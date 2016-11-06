@@ -323,7 +323,7 @@ class net():
 			# 	return next(self.data.train)
 
 
-	def train(self,data=0,steps=-1,dropout=None,display_step=10,test_step=200,batch_size=10,resume=False): #epochs=-1,
+	def train(self,data=0,steps=-1,dropout=None,display_step=10,test_step=200,batch_size=10,do_resume=False): #epochs=-1,
 		if data: self.data=data
 		steps = 9999999 if steps==-1 else steps
 		session=self.session
@@ -341,8 +341,8 @@ class net():
 		saver = tf.train.Saver(tf.all_variables())
 		snapshot = self.name + str(get_last_tensorboard_run_nr())
 		checkpoint = tf.train.latest_checkpoint(checkpoint_dir)
-		if resume and checkpoint:
-			print("LOADING " + checkpoint)
+		if do_resume and checkpoint:
+			print("!LOADING " + checkpoint)
 			saver.restore(session, checkpoint)
 		session.run([tf.initialize_all_variables()])
 		step = 0 # show first
