@@ -29,23 +29,28 @@ def find_fonts():
 # copy all 'good' fonts to one directory if you want
 # os.system("mkdir -p "+fonts_dir)
 
-
+# fonts={} # cache all?
 def check_fonts():
-	for font in fonts:
+	for font in fontnames:
 		try:
-			ImageFont.truetype(font, max_size)
-			ImageFont.truetype(font, min_size)
+			if not '/' in font :
+				ImageFont.truetype(fonts_dir+font, max_size)
+				ImageFont.truetype(fonts_dir+font, min_size)
+			else:
+				ImageFont.truetype(font, max_size)
+				ImageFont.truetype(font, min_size)
 		except:
 			print("BAD font "+font)
-			fonts.remove(font)
+			fontnames.remove(font)
 
 if not os.path.exists("fonts.list"):
 	find_fonts()
 
 fonts_dir="/data/fonts/"
-fonts=readlines("fonts.list")
+fontnames=readlines("fonts.list")
 # fonts=['Arial.ttf']
 # check_fonts()
+check_fonts()
 
 styles=['regular','light','medium','bold','italic']
 # Regular Medium Heavy Demi 'none','normal', Subsetted Sans #,'underline','strikethrough']
@@ -97,7 +102,7 @@ class letter():
 		# super(Argument, self).__init__(*margs, **args)
 		# self.name = args['name']		if 'name' in args else None
 		# self.family = args['family'] if 'family' in args else pick(families)
-		self.font = args['font'] if 'font' in args else pick(fonts)
+		self.font = args['font'] if 'font' in args else pick(fontnames)
 		self.size = args['size'] if 'size' in args else pick(sizes)
 		self.char = args['char'] if 'char' in args else pick(letterz)
 		self.back = args['back'] if 'back' in args else None #self.random_color() # 'white' #None #pick(range(-90, 180))
@@ -146,7 +151,10 @@ class letter():
 		return 'regular'
 
 	def matrix(self):
-		return np.array(self.image())
+		# try:
+			return np.array(self.image())
+		# except:
+		# 	return np.array(max_size*(max_size+extra_y))
 
 	def image(self):
 		fontPath = self.font if '/' in self.font else fonts_dir+self.font
@@ -183,7 +191,7 @@ class letter():
 	def random(cls):
 		l=letter()
 		l.size=pick(sizes)
-		l.font=pick(fonts)
+		l.font=pick(fontnames)
 		l.char=pick(letterz)
 		l.ord=ord(l.char)
 		l.position=(pick(range(0,10)),pick(range(0,10)))
