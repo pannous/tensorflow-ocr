@@ -16,7 +16,7 @@ weight_divider=10.
 default_learning_rate=0.001 #  mostly overwritten, so ignore it
 decay_steps = 100000
 decay_size = 0.1
-
+save_step=10#000 #  if you don't want to save snapshots, set to -1
 
 def nop():return 0
 def closest_unitary(A):
@@ -356,8 +356,9 @@ class net():
 				print("\rStep {:d} Loss= {:.6f} Accuracy= {:.3f}".format(step,loss,acc),end=' ')
 				if str(loss)=="nan": return print("\nLoss gradiant explosion, exiting!!!") #restore!
 			if step % test_step == 0: self.test(step)
-			if step % 1000 == 0:
-				saver.save(session, self.name+".ckpt", self.global_step)
+			if step % save_step== 0:
+				print("saving snapshot")
+				saver.save(session, self.name+str(get_last_tensorboard_run_nr()) + ".ckpt", self.global_step)
 
 			step += 1
 		print("\nOptimization Finished!")
