@@ -56,8 +56,8 @@ class net():
 			self.learning_rate=learning_rate
 			if not name: name=model.__name__
 			self.name=name
-			# if name and os.path.exists(name):
-			# 	return self.load_model(name)
+			if name and os.path.exists(name+".model"):
+				return self.load_model(name+".model")
 			self.generate_model(model)
 
 	def get_data_shape(self):
