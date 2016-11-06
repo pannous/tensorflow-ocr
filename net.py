@@ -357,7 +357,7 @@ class net():
 				print("\rStep {:d} Loss= {:.6f} Accuracy= {:.3f}".format(step,loss,acc),end=' ')
 				if str(loss)=="nan": return print("\nLoss gradiant explosion, exiting!!!") #restore!
 			if step % test_step == 0: self.test(step)
-			if step % save_step== 0:
+			if step % save_step == 0 and step>0:
 				print("SAVING snapshot "+snapshot)
 				saver.save(session, snapshot + ".ckpt", self.global_step)
 
