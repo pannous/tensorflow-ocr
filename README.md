@@ -7,4 +7,4 @@ Training:
 `./train_ocr_layer.py`
 
 Usage:
-`./not-yet.why ;)`
+`./not.yet ;)`
