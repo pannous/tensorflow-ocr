@@ -1,4 +1,4 @@
-# tensorflow-ocr
+# tensorflow OCR
 OCR using tensorflow with attention
 
 Migrated from https://github.com/pannous/caffe-ocr
@@ -8,3 +8,5 @@ Training:
 
 Usage:
 `./not.yet ;)`
+
+Looking for a tensorflow consultant / deep learning contractor? Reach out to info@pannous.com
