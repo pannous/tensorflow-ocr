@@ -5,6 +5,9 @@ tensorboard_logs = '/tmp/tensorboard_logs/'
 global logdir
 
 def get_last_tensorboard_run_nr():
+	if not os.path.exists(logdir):
+		os.system("mkdir " + logdir)
+		return 0
 	logs=subprocess.check_output(["ls", tensorboard_logs]).split("\n")
 	# print("logs: ",logs)
 	runs=map(lambda x: (not x.startswith("run") and -1) or int(x[-1]) ,logs)

@@ -342,9 +342,10 @@ class net():
 		snapshot = self.name + str(get_last_tensorboard_run_nr())
 		checkpoint = tf.train.latest_checkpoint(checkpoint_dir)
 		if do_resume and checkpoint:
-			print("!LOADING " + checkpoint)
+			print("LOADING " + checkpoint+" !!!")
 			saver.restore(session, checkpoint)
-		session.run([tf.initialize_all_variables()])
+		# session.run([tf.initialize_all_variables()])
+		session.run([tf.global_variables_initializer()])
 		step = 0 # show first
 		while step < steps:
 			batch_xs, batch_ys = self.next_batch(batch_size,session)
