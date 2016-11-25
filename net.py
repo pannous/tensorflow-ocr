@@ -73,7 +73,9 @@ class net():
 			self.train_phase = tf.placeholder(tf.bool, name='train_phase')
 			with tf.device(_cpu): self.global_step = tf.Variable(0)  # dont set, feed or increment global_step, tensorflow will do it automatically
 		with tf.name_scope('data'):
-			if not self.input_shape:
+			if len(self.input_shape)==1:
+				self.input_width=self.input_shape[0]
+			if not self.input_shape or self.input_width:
 				self.x = x = self.target = tf.placeholder(tf.float32, [None, self.input_width])
 				self.last_layer=x
 			else:
