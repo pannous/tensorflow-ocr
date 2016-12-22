@@ -1,12 +1,11 @@
 from __future__ import print_function
 
 import time
-
 import numpy as np
 import tensorflow as tf
 from tensorflow.contrib.tensorboard.plugins import projector # for 3d PCA/ t-SNE
-
 from tensorboard_util import *
+slim = tf.contrib.slim
 
 start = int(time.time())
 
@@ -16,17 +15,18 @@ run_tensorboard(restart=False)
 
 # gpu = True
 gpu = False
-debug = False #True # summary.histogram  : 'module' object has no attribute 'histogram' WTF
-debug = True # histogram_summary ...
+debug = False # summary.histogram  : 'module' object has no attribute 'histogram' WTF
+debug = True  # histogram_summary ...
 visualize_cluster = False # NOT YET: 'ProjectorConfig' object has no attribute 'embeddings'
 
-slim = tf.contrib.slim
 weight_divider=10.
 default_learning_rate=0.001 #  mostly overwritten, so ignore it
 decay_steps = 100000
 decay_size = 0.1
 save_step=10000 #  if you don't want to save snapshots, set to -1
 checkpoint_dir="checkpoints"
+_cpu = '/cpu:0'
+_gpu = '/GPU:0'
 
 if not os.path.exists(checkpoint_dir):
 	os.makedirs(checkpoint_dir)
@@ -34,16 +34,15 @@ if not os.path.exists(checkpoint_dir):
 
 def nop():return 0
 def closest_unitary(A):
-  """ Calculate the unitary matrix U that is closest with respect to the operator norm distance to the general matrix A. """
-  import scipy
-  V, __, Wh = scipy.linalg.svd(A)
-  return np.matrix(V.dot(Wh))
+	""" Calculate the unitary matrix U that is closest with respect to the operator norm distance to the general matrix A. """
+	import scipy
+	V, __, Wh = scipy.linalg.svd(A)
+	return np.matrix(V.dot(Wh))
 
-_cpu='/cpu:0'
 class net():
 
 	def __init__(self,model,data=0,input_width=0,output_width=0,input_shape=0,name=0,learning_rate=default_learning_rate):
-		device = '/GPU:0' if gpu else '/cpu:0'
+		device = _gpu if gpu else _cpu
 		device = None # auto
 		print("Using device ",device)
 		with tf.device(device):
@@ -64,9 +63,10 @@ class net():
 			self.learning_rate=learning_rate
 			if not name: name=model.__name__
 			self.name=str(name)
-			if name and os.path.exists(name+".model"):
-				return self.load_model(name+".model")
-			self.generate_model(model)
+			if name and os.path.exists(self.name+".model"):
+				self.load_model(self.name+".model")
+			else:
+				self.generate_model(model)
 
 	def get_data_shape(self):
 		if self.input_shape:
@@ -108,37 +108,6 @@ class net():
 	def	fully_connected(self,hidden=1024, depth=1, activation=tf.nn.tanh, dropout=False, parent=-1, norm=None): #):
 		return self.dense()
 
-	# Fully connected 'pyramid' layer, allows very high learning_rate >0.1 (but don't abuse)
-	def denseNet(self, hidden=20, depth=3, act=tf.nn.tanh, dropout=True,norm=None): #
-		if(hidden>100):print("WARNING: denseNet uses quadratic mem for "+str(hidden))
-		if(depth<3):print("WARNING: did you mean to use Fully connected layer 'dense'? Expecting depth>3 vs "+str(depth))
-		inputs=self.last_layer
-		inputs_width=self.last_width
-		width = hidden
-		while depth>0:
-			with tf.name_scope('DenNet_{:d}'.format(width)) as scope:
-				print("dense width ",inputs_width,"x",width)
-				nr = len(self.layers)
-				weights = tf.Variable(tf.random_uniform([inputs_width, width],minval=-1./width,maxval=1./width), name="weights")
-				bias = tf.Variable(tf.random_uniform([width],minval=-1./width,maxval=1./width), name="bias") # auto nr + context
-				dense1 = tf.matmul(inputs, weights, name='dense_'+str(nr))+ bias
-				tf.histogram_summary('dense_'+str(nr),dense1)
-				tf.histogram_summary('dense_'+str(nr)+'/sparsity', tf.nn.zero_fraction(dense1))
-				tf.histogram_summary('weights_'+str(nr),weights)
-				tf.histogram_summary('weights_'+str(nr)+'/sparsity', tf.nn.zero_fraction(weights))
-				tf.histogram_summary('bias_'+str(nr),bias)
-
-
-				if act: dense1 = act(dense1)
-				if norm: dense1 = self.norm(dense1,lsize=1) # SHAPE!
-				if dropout: dense1 = tf.nn.dropout(dense1, self.keep_prob)
-				self.add(dense1)
-				self.last_width = width
-				inputs=tf.concat(1,[inputs,dense1])
-				inputs_width+=width
-				depth=depth-1
-		self.last_width = width
-
 	def add(self, layer):
 		self.layers.append(layer)
 		self.last_layer = layer
@@ -175,9 +144,44 @@ class net():
 		self.conv([1,1, nChannels, nOutChannels], pool=True, dropout=do_dropout, norm=None) # pool (2, 2)
 		# self.add(tf.nn.SpatialConvolution(nChannels, nOutChannels, 1, 1, 1, 1, 0, 0))
 
+
+	# Fully connected 'pyramid' layer, allows very high learning_rate >0.1 (but don't abuse)
+	# NOT TO BE CONFUSED with buildDenseConv below!
+	def fullDenseNet(self, hidden=20, depth=3, act=tf.nn.tanh, dropout=True, norm=None):  #
+		if hidden > 100: print("WARNING: denseNet uses O(n^2) quadratic memory for " + str(hidden)) + " hidden units"
+		if depth < 3: print(
+			"WARNING: did you mean to use Fully connected layer 'dense'? Expecting depth>3 vs " + str(depth))
+		inputs = self.last_layer
+		inputs_width = self.last_width
+		width = hidden
+		while depth > 0:
+			with tf.name_scope('DenNet_{:d}'.format(width)) as scope:
+				print("dense width ", inputs_width, "x", width)
+				nr = len(self.layers)
+				weights = tf.Variable(tf.random_uniform([inputs_width, width], minval=-1. / width, maxval=1. / width),
+															name="weights")
+				bias = tf.Variable(tf.random_uniform([width], minval=-1. / width, maxval=1. / width),
+													 name="bias")  # auto nr + context
+				dense1 = tf.matmul(inputs, weights, name='dense_' + str(nr)) + bias
+				tf.summary.histogram('dense_' + str(nr), dense1)
+				tf.summary.histogram('dense_' + str(nr) + '/sparsity', tf.nn.zero_fraction(dense1))
+				tf.summary.histogram('weights_' + str(nr), weights)
+				tf.summary.histogram('weights_' + str(nr) + '/sparsity', tf.nn.zero_fraction(weights))
+				tf.summary.histogram('bias_' + str(nr), bias)
+
+				if act: dense1 = act(dense1)
+				if norm: dense1 = self.norm(dense1, lsize=1)  # SHAPE!
+				if dropout: dense1 = tf.nn.dropout(dense1, self.keep_prob)
+				self.add(dense1)
+				self.last_width = width
+				inputs = tf.concat(1, [inputs, dense1])
+				inputs_width += width
+				depth = depth - 1
+		self.last_width = width
+
 	# Densely Connected Convolutional Networks https://arxiv.org/abs/1608.06993
-	def buildDenseConv(self,N_blocks=3):
-		depth = 3 * N_blocks + 4
+	def buildDenseConv(self, nBlocks=3, magic_factor=1):
+		depth = 3 * nBlocks + 4
 		if  (depth - 4) % 3 :  raise Exception("Depth must be 3N + 4! (4,7,10,...) ")  # # layers in each denseblock
 		N = (depth - 4) / 3
 		do_dropout = True# None  nil to disable dropout, non - zero number to enable dropout and set drop rate
@@ -211,8 +215,10 @@ class net():
 		# self.add(tf.nn.max_pool(self.last_layer, ksize=[1, 4, 4, 1], strides=[1, 1, 1, 1], padding='SAME'))
 		self.add(tf.nn.max_pool(self.last_layer, ksize=[1, 4, 4, 1], strides=[1, 2, 2, 1], padding='SAME'))
 		# self.add(tf.nn.SpatialAveragePooling(8, 8)).add(nn.Reshape(nChannels))
-		self.reshape([-1,nChannels*4]) # ready for classification
-		# self.reshape([-1, nChannels * 16])  # ready for classification
+		if magic_factor==16:
+			self.reshape([-1, nChannels * 16])  # ready for classification
+		else:
+			self.reshape([-1,nChannels*4]) # ready for classification
 
 	# Fully connected layer
 	def dense(self, hidden=1024, depth=1, activation=tf.nn.tanh, dropout=False, parent=-1, norm=None): #
@@ -238,11 +244,11 @@ class net():
 					weights = tf.Variable(tf.random_uniform([self.last_width, width], minval=-1. / width, maxval=1. / width), name="weights_dense")
 				bias = tf.Variable(tf.random_uniform([width],minval=-1./width,maxval=1./width), name="bias_dense")
 				dense1 = tf.matmul(parent, weights, name='dense_'+str(nr))+ bias
-				tf.histogram_summary('dense_'+str(nr),dense1)
-				tf.histogram_summary('weights_'+str(nr),weights)
-				tf.histogram_summary('bias_'+str(nr),bias)
-				tf.histogram_summary('dense_'+str(nr)+'/sparsity', tf.nn.zero_fraction(dense1))
-				tf.histogram_summary('weights_'+str(nr)+'/sparsity', tf.nn.zero_fraction(weights))
+				tf.summary.histogram('dense_' + str(nr), dense1)
+				tf.summary.histogram('weights_' + str(nr), weights)
+				tf.summary.histogram('bias_' + str(nr), bias)
+				tf.summary.histogram('dense_' + str(nr) + '/sparsity', tf.nn.zero_fraction(dense1))
+				tf.summary.histogram('weights_' + str(nr) + '/sparsity', tf.nn.zero_fraction(weights))
 				if activation: dense1 = activation(dense1)
 				if norm: dense1 = self.norm(dense1,lsize=1)
 				if dropout: dense1 = tf.nn.dropout(dense1, self.keep_prob)
@@ -275,21 +281,36 @@ class net():
 
 			# # conv1 = conv2d('conv', _X, _weights, _bias)
 			conv1=tf.nn.bias_add(tf.nn.conv2d(self.last_layer,filter=filters, strides=[1, 1, 1, 1], padding='SAME'), _bias)
-			if debug: tf.histogram_summary('conv_' + str(len(self.layers)), conv1)
+			if debug: tf.summary.histogram('conv_' + str(len(self.layers)), conv1)
 			if act: conv1=act(conv1)
 			if pool: conv1 = tf.nn.max_pool(conv1, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 			if norm: conv1 = tf.nn.lrn(conv1, depth_radius=4, bias=1.0, alpha=0.001 / 9.0, beta=0.75)
-			if debug: tf.histogram_summary('norm_' + str(len(self.layers)), conv1)
+			if debug: tf.summary.histogram('norm_' + str(len(self.layers)), conv1)
 			if dropout: conv1 = tf.nn.dropout(conv1,self.keep_prob)
 			print("output shape ",conv1.get_shape())
 			self.add(conv1)
+
+	def rnn(self):
+		# data = tf.placeholder(tf.float32, [None, width, height])  # Number of examples, number of input, dimension of each input
+		# target = tf.placeholder(tf.float32, [None, classes])
+		# num_hidden = 24
+		num_hidden = 42
+		cell = tf.nn.rnn_cell.LSTMCell(num_hidden)
+		val, _ = tf.nn.dynamic_rnn(cell, self.last_layer, dtype=tf.float32)
+		val = tf.nn.dropout(val,0.8)
+		val = tf.transpose(val, [1, 0, 2])
+		self.last = tf.gather(val, int(val.get_shape()[0]) - 1)
+		# weight = tf.Variable(tf.truncated_normal([num_hidden, int(target.get_shape()[1])]))
+		# bias = tf.Variable(tf.constant(0.1, shape=[target.get_shape()[1]]))
+		# mistakes = tf.not_equal(tf.argmax(target, 1), tf.argmax(prediction, 1))
+		# error = tf.reduce_mean(tf.cast(mistakes, tf.float32))
 
 	def classifier(self,classes=0):  # Define loss and optimizer
 		if not classes: classes=self.num_classes
 		with tf.name_scope('prediction'):# prediction
 			if self.last_width!=classes:
 				# print("Automatically adding dense prediction")
-				self.dense(hidden=classes, activation= False, dropout = False)
+				self.dense(hidden=classes, activation= None, dropout = False)
 			# cross_entropy = -tf.reduce_sum(y_*y)
 		with tf.name_scope('classifier'):
 			y_=self.target
@@ -308,18 +329,18 @@ class net():
 				self.cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(y, y_)) # prediction, target
 
 			# if not gpu:
-			with tf.device(_cpu):tf.scalar_summary('cost', self.cost)
+			with tf.device(_cpu):tf.summary.scalar('cost', self.cost)
 			# self.cost = tf.Print(self.cost , [self.cost ], "debug cost : ")
 			# learning_scheme=self.learning_rate
 			learning_scheme=tf.train.exponential_decay(self.learning_rate, self.global_step, decay_steps, decay_size,staircase=True)
-			with tf.device(_cpu):tf.scalar_summary('learning_rate', learning_scheme)
+			with tf.device(_cpu):tf.summary.scalar('learning_rate', learning_scheme)
 			self.optimizer = tf.train.AdamOptimizer(learning_scheme).minimize(self.cost)
 			# self.optimizer = NeuralOptimizer(data=None, learning_rate=0.01, shared_loss=self.cost).minimize(self.cost) No good
 
 			# Evaluate model
 			correct_pred = tf.equal(tf.argmax(prediction, 1), tf.argmax(self.target, 1))
 			self.accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
-			if not gpu: tf.scalar_summary('accuracy', self.accuracy)
+			if not gpu: tf.summary.scalar('accuracy', self.accuracy)
 			# Launch the graph
 
 	def next_batch(self,batch_size,session,test=False):
@@ -341,17 +362,18 @@ class net():
 		steps = 9999999 if steps==-1 else steps
 		session=self.session
 		# with tf.device(_cpu):
-
-		# import tensorflow.contrib.layers as layers
 		# t = tf.verify_tensor_all_finite(t, msg)
 		tf.add_check_numerics_ops()
-		self.summaries = tf.merge_all_summaries()
-		self.summary_writer = tf.train.SummaryWriter(current_logdir(), session.graph) #
+		try: self.summaries = tf.summary.merge_all()
+		except:self.summaries = tf.merge_all_summaries()
+		try:self.summary_writer = tf.summary.FileWriter(current_logdir(), session.graph)  #
+		except: self.summary_writer = tf.train.SummaryWriter(current_logdir(), session.graph) #
 		if not dropout:dropout=1. # keep all
 		x=self.x
 		y=self.y
 		keep_prob=self.keep_prob
-		saver = tf.train.Saver(tf.all_variables())
+		try:saver = tf.train.Saver(tf.global_variables())
+		except:saver = tf.train.Saver(tf.all_variables())
 		snapshot = self.name + str(get_last_tensorboard_run_nr())
 		checkpoint = tf.train.latest_checkpoint(checkpoint_dir)
 		if do_resume and checkpoint:
