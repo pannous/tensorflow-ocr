@@ -4,7 +4,7 @@ import time
 import numpy as np
 import tensorflow as tf
 from tensorflow.contrib.tensorboard.plugins import projector # for 3d PCA/ t-SNE
-from tensorboard_util import *
+from .tensorboard_util import *
 slim = tf.contrib.slim
 
 start = int(time.time())
@@ -41,21 +41,17 @@ def closest_unitary(A):
 
 class net():
 
-	def __init__(self,model,data=0,input_width=0,output_width=0,input_shape=0,name=0,learning_rate=default_learning_rate):
+	def __init__(self,model,input_width=0,output_width=0,input_shape=[],name=0,learning_rate=default_learning_rate):
 		device = _gpu if gpu else _cpu
 		device = None # auto
 		print("Using device ",device)
 		with tf.device(device):
-		# if True:
-			self.session=sess=session=tf.Session()
-			# self.session=sess=session=tf.Session(config=tf.ConfigProto(log_device_placement=True))
+			self.session=tf.Session()
 			self.model=model
 			self.input_shape=input_shape or [input_width,input_width]
-			self.data=data # assigned to self.x=net.input via train
-			if not input_width:
-				input_width=self.get_data_shape()
+			if not input_width: input_width, _ = self.get_data_shape()
 			self.input_width=input_width
-			self.last_width=self.input_width
+			self.last_width = self.input_width
 			self.output_width=output_width
 			self.num_classes=output_width
 			# self.batch_size=batch_size
@@ -63,10 +59,15 @@ class net():
 			self.learning_rate=learning_rate
 			if not name: name=model.__name__
 			self.name=str(name)
+			if input_width == 0:
+				raise Exception("Please set input_width or input_shape")
+			if output_width==0:
+				raise Exception("Please set number of classes via output_width")
 			if name and os.path.exists(self.name+".model"):
 				self.load_model(self.name+".model")
 			else:
 				self.generate_model(model)
+
 
 	def get_data_shape(self):
 		if self.input_shape:
@@ -79,23 +80,24 @@ class net():
 	def generate_model(self,model, name=''):
 		if not model: return self
 		with tf.name_scope('state'):
-			self.keep_prob = tf.placeholder(tf.float32)  # 1 for testing! else 1 - dropout
+			self.keep_prob = tf.placeholder(tf.float32, name="dropout_keep_prob")  # 1 for testing! else 1 - dropout
 			self.train_phase = tf.placeholder(tf.bool, name='train_phase')
 			with tf.device(_cpu): self.global_step = tf.Variable(0)  # dont set, feed or increment global_step, tensorflow will do it automatically
 		with tf.name_scope('data'):
 			if len(self.input_shape)==1:
 				self.input_width=self.input_shape[0]
 			elif self.input_shape:
-				self.x = x = self.input = tf.placeholder(tf.float32, [None, self.input_shape[0], self.input_shape[1]])
-				# todo [None, self.input_shape]
+				shape_ = [None, self.input_shape[0], self.input_shape[1]] # batch:None
+				# todo [None, *self.input_shape]
+				self.x = x = self.input = tf.placeholder(tf.float32, shape_, name="input_x")
 				self.last_layer = x
 				self.last_shape = x
 			elif self.input_width:
-				self.x = x = self.target = tf.placeholder(tf.float32, [None, self.input_width])
+				self.x = x = self.target = tf.placeholder(tf.float32, [None, self.input_width], name = "input_x")
 				self.last_layer=x
 			else:
 				raise Exception("need input_shape or input_width by now")
-			self.y = y = self.target = tf.placeholder(tf.float32, [None, self.output_width])
+			self.y = y = self.target = tf.placeholder(tf.float32, [None, self.output_width],name="target_y")
 		with tf.name_scope('model'):
 			model(self)
 		if(self.last_width!=self.output_width):
@@ -183,7 +185,8 @@ class net():
 	def buildDenseConv(self, nBlocks=3, magic_factor=1):
 		depth = 3 * nBlocks + 4
 		if  (depth - 4) % 3 :  raise Exception("Depth must be 3N + 4! (4,7,10,...) ")  # # layers in each denseblock
-		N = (depth - 4) / 3
+		N = (depth - 4) // 3
+		print("N=%d"%N)
 		do_dropout = True# None  nil to disable dropout, non - zero number to enable dropout and set drop rate
 		# dropRate = self.keep_prob # nil to disable dropout, non - zero number to enable dropout and set drop rate
 		# # channels before entering the first denseblock ??
@@ -229,7 +232,9 @@ class net():
 				self.last_width= int(shape[1]*shape[2])
 			else:
 				self.last_width= int(shape[1]*shape[2]*shape[3])
-			print("reshapeing ",shape,"to",self.last_width)
+			if self.last_width==0:
+				raise Exception("self.last_width Must not be zero")
+			print("reshaping ",shape,"to",self.last_width)
 			parent = tf.reshape(parent, [-1, self.last_width])
 
 		width = hidden
@@ -291,8 +296,8 @@ class net():
 			self.add(conv1)
 
 	def rnn(self):
-		# data = tf.placeholder(tf.float32, [None, width, height])  # Number of examples, number of input, dimension of each input
-		# target = tf.placeholder(tf.float32, [None, classes])
+		# data = tf.placeholder(tf.float32, [None, width, height],name="data")  # Number of examples, input, dimension
+		# target = tf.placeholder(tf.float32, [None, classes],name="target")
 		# num_hidden = 24
 		num_hidden = 42
 		cell = tf.nn.rnn_cell.LSTMCell(num_hidden)
@@ -306,7 +311,8 @@ class net():
 		# error = tf.reduce_mean(tf.cast(mistakes, tf.float32))
 
 	def classifier(self,classes=0):  # Define loss and optimizer
-		if not classes: classes=self.num_classes
+		if not classes: classes = self.num_classes
+		if not classes: raise Exception("Please specify num_classes")
 		with tf.name_scope('prediction'):# prediction
 			if self.last_width!=classes:
 				# print("Automatically adding dense prediction")
@@ -334,7 +340,7 @@ class net():
 			# learning_scheme=self.learning_rate
 			learning_scheme=tf.train.exponential_decay(self.learning_rate, self.global_step, decay_steps, decay_size,staircase=True)
 			with tf.device(_cpu):tf.summary.scalar('learning_rate', learning_scheme)
-			self.optimizer = tf.train.AdamOptimizer(learning_scheme).minimize(self.cost)
+			self.optimize = tf.train.AdamOptimizer(learning_scheme).minimize(self.cost)
 			# self.optimizer = NeuralOptimizer(data=None, learning_rate=0.01, shared_loss=self.cost).minimize(self.cost) No good
 
 			# Evaluate model
@@ -342,6 +348,17 @@ class net():
 			self.accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
 			if not gpu: tf.summary.scalar('accuracy', self.accuracy)
 			# Launch the graph
+
+	# noinspection PyAttributeOutsideInit
+	def regression(self, param):
+		# self.dense(100)
+		self.dense(param)
+		self.y = tf.placeholder(tf.float32, [None, param], name="target_y")  # self.batch_size
+		with tf.name_scope("train"):
+			self.learning_rate = tf.Variable(0.5, trainable=False)
+			self.cost = tf.reduce_mean(tf.pow(self.y - self.last_layer, 2))
+			self.optimize = tf.train.AdamOptimizer(self.learning_rate).minimize(self.cost)
+			self.accuracy=tf.maximum(0., 1- tf.sqrt(self.cost))
 
 	def next_batch(self,batch_size,session,test=False):
 		try:
@@ -385,11 +402,10 @@ class net():
 		while step < steps:
 			batch_xs, batch_ys = self.next_batch(batch_size,session)
 			# print("step %d \r" % step)# end=' ')
-
 			# tf.train.shuffle_batch_join(example_list, batch_size, capacity=min_queue_size + batch_size * 16, min_queue_size)
 			# Fit training using batch data
 			feed_dict = {x: batch_xs, y: batch_ys, keep_prob: dropout, self.train_phase: True}
-			loss,_= session.run([self.cost,self.optimizer], feed_dict=feed_dict)
+			loss,_= session.run([self.cost, self.optimize], feed_dict=feed_dict)
 			if step % display_step == 0:
 				seconds = int(time.time())-start
 				# Calculate batch accuracy, loss
@@ -439,4 +455,3 @@ class net():
 
 	# def inputs(self,data):
 	# 	self.inputs, self.labels = load_data()#...)
-
