@@ -410,7 +410,7 @@ class net():
 	def test(self,step,number=400):#256 self.batch_size
 		session=sess=self.session
 		config = projector.ProjectorConfig()
-		if visualize_cluster:
+		if visualize_cluster: # EMBEDDINGs ++ https://github.com/tensorflow/tensorflow/issues/6322
 			embedding = config.embeddings.add()  # You can add multiple embeddings. Here just one.
 			embedding.tensor_name = self.last_layer.name # last_dense
 			# embedding.tensor_path
