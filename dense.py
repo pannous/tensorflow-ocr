@@ -37,7 +37,9 @@ class net(layer.net):
 		shape = self.last_layer.get_shape()
 		if shape and len(shape) > 2:
 			self.last_width = int(shape[1] * shape[2] * shape[3])
-			print("reshapeing ", shape, "to", self.last_width)
+			if self.last_width<=0:
+				raise Exception("self.last_width must not be 0")
+			print("reshaping ", shape, "to", self.last_width)
 			parent = tf.reshape(parent, [-1, self.last_width])
 
 		width = hidden
