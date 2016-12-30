@@ -5,9 +5,10 @@ import layer
 import letter
 
 data = letter.batch()
+input_width, output_width=data.shape[0],data.shape[1]
 
-learning_rate = 0.01
-# learning_rate = 0.0003
+learning_rate = 0.0003
+nClasses =letter.nLetters
 training_iters = 500000
 batch_size = 64
 
@@ -36,6 +37,7 @@ def baseline(net):
 def denseConv(net):
 	# type: (layer.net) -> None
 	print("Building dense-net")
+	# tf.image.crop_and_resize()
 	net.reshape(shape=[-1, 28, 28, 1])  # Reshape input picture
 	# net.conv([3, 3, 1, 64])
 	net.buildDenseConv()
@@ -57,10 +59,9 @@ def alex(net):
 	net.dense(1024,activation=tf.nn.relu)
 
 
-# net=layer.net(baseline, data, learning_rate=0.001)
-# net=layer.net(alex,data, learning_rate=0.001) # NOPE!?
-net=layer.net(denseConv,data, learning_rate)
-
+net=layer.net(baseline, input_width=28, output_width=nClasses, learning_rate=learning_rate)
+# net=layer.net(alex,input_width=28, output_width=nClasses, learning_rate=learning_rate) # NOPE!?
+# net=layer.net(denseConv, input_width=28, output_width=nClasses,learning_rate=learning_rate)
 # net.train(steps=50000,dropout=0.6,display_step=1,test_step=1) # debug
 # net.train(steps=50000,dropout=0.6,display_step=5,test_step=20) # test
 net.train(data=data, steps=training_iters, dropout=.6, display_step=10, test_step=100) # run

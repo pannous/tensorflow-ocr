@@ -1,6 +1,5 @@
 from random import randint
-from PIL import Image
-import ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont
 import os
 # import os.path
 import numpy
@@ -15,7 +14,8 @@ extra_y = 0 # 10 # for oversized letters g,...
 sizes=range(min_size,max_size)
 if min_size==max_size: sizes=[min_size]
 min_char=32
-letterz=map(chr, range(min_char, 128))
+letterz= list(map(chr, range(min_char, 128)))
+nLetters=len(letterz)
 max_angle=30#40
 
 
@@ -40,11 +40,14 @@ def check_fonts():
 				ImageFont.truetype(font, max_size)
 				ImageFont.truetype(font, min_size)
 		except:
-			print("BAD font "+font)
+			# print("BAD font "+font)
 			fontnames.remove(font)
 
 if not os.path.exists("fonts.list"):
+	print("Building fonts.list")
 	find_fonts()
+else:
+	print("Using cashed fonts.list")
 
 fonts_dir="/data/fonts/"
 fontnames=readlines("fonts.list")
@@ -55,12 +58,41 @@ check_fonts()
 styles=['regular','light','medium','bold','italic']
 # Regular Medium Heavy Demi 'none','normal', Subsetted Sans #,'underline','strikethrough']
 
+from enum import Enum
 
-class letter_batch():
 
-	def __init__(self, batch_size=64):
+class Target(Enum):  # labels
+	letter = 1
+	size = 2
+	color = 3
+	font = 4
+	position = 5
+	style = 6
+	angle = 7
+
+nClasses={
+	Target.letter: nLetters,  # classification
+	Target.font: len(fontnames),  # classification
+	Target.style: len(styles),  # classification
+	Target.size: 1,  # max_size # regression
+	Target.angle: 1,  # max_angle # regression
+	Target.position: 2,  # x,y # regression
+	Target.color: 3,  # RGB # regression
+}
+
+# test_word=9 # use 5 even for speaker etc
+
+
+def pos_to_arr(pos):
+	return [pos['x'],pos['y']]
+
+
+class batch():
+
+	def __init__(self, batch_size=64,target=Target.letter):
 		self.batch_size=batch_size
-		self.shape=[max_size * max_size+extra_y, len(letterz)]
+		self.target= target
+		self.shape=[max_size * max_size+extra_y, nClasses[target]]
 		# self.shape=[batch_size,max_size,max_size,len(letters)]
 		self.train= self
 		self.test = self
@@ -69,10 +101,10 @@ class letter_batch():
 	def next_batch(self,batch_size=None):
 		letters=[letter() for i in range(batch_size or self.batch_size)]
 		xs=map(lambda l:l.matrix()/255., letters)
-		ys=map(lambda l:l.ord, letters)
-		ys=map(lambda l:one_hot(l,len(letterz),min_char), ys)
-		return xs,ys
-
+		if self.target==Target.letter: ys=[one_hot(l.ord,nLetters,min_char) for l in letters]
+		if self.target == Target.size: ys = [l.size for l in letters]
+		if self.target == Target.position: ys = [pos_to_arr(l.pos) for l in letters]
+		return list(xs), list(ys)
 
 def pick(xs):
 	return xs[randint(0,len(xs)-1)]
@@ -83,16 +115,10 @@ def one_hot(item, num_classes,offset):
 	labels_one_hot[item-offset] = 1
 	return labels_one_hot
 
-
-def batch():
-	return letter_batch()
-
 class letter():
 	# fonts=
-
-
 	# font=property(get_font,set_font)
-	ord=property(lambda self:ord(self.char))
+	# number=property(lambda self:ord(self.char))
 
 
 	def __init__(self, *margs, **args): # optional arguments
@@ -151,14 +177,15 @@ class letter():
 		return 'regular'
 
 	def matrix(self):
-		# try:
+		try:
 			return np.array(self.image())
-		# except:
-		# 	return np.array(max_size*(max_size+extra_y))
+		except:
+			return np.array(max_size*(max_size+extra_y))
 
 	def image(self):
 		fontPath = self.font if '/' in self.font else fonts_dir+self.font
 		try:
+			fontPath= fontPath.strip()
 			ttf_font = ImageFont.truetype(fontPath, self.size)
 		except:
 			raise Exception("BAD FONT: "+fontPath)
@@ -201,7 +228,7 @@ class letter():
 
 	def __str__(self):
 		format="letter{char='%s',size=%d,font='%s',angle=%d,ord=%d,pos=%s}"
-		return format % (self.char, self.size, self.font,self.angle,ord(self.char),self.pos)
+		return format % (self.char, self.size, self.font, self.angle, ord(self.char), self.pos)
 
 	# def print(self):
 	# 	print(self.__str__)
@@ -214,6 +241,7 @@ class letter():
 
 if __name__ == "__main__":
 	l=letter()
+	m=l.matrix()
 	print(l)
 	l.show()
 
