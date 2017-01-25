@@ -32,7 +32,7 @@ class net(layer.net):
 
 
 	# Fully connected layer
-	def dense(self, hidden=1024, depth=1, act=tf.nn.tanh, dropout=True, parent=-1):  #
+	def dense(self, hidden=1024, depth=1, activation=tf.nn.tanh, dropout=False, parent=-1:  #
 		if parent == -1: parent = self.last_layer
 		shape = self.last_layer.get_shape()
 		if shape and len(shape) > 2:
