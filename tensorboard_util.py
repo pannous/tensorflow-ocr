@@ -61,7 +61,8 @@ def current_logdir():
 def run_tensorboard(restart=False,show_browser=False):
 	if restart: kill_tensorboard()
 		#  cd /usr/local/lib/python2.7/dist-packages/tensorflow/tensorboard/ in tf 10.0 due to BUG
-	subprocess.Popen(["tensorboard", '--logdir=' + tensorboard_logs],cwd="/usr/local/lib/python2.7/dist-packages/tensorflow/tensorboard")  # async
+		# ,cwd="/usr/local/lib/python2.7/dist-packages/tensorflow/tensorboard"
+	subprocess.Popen(["tensorboard", '--logdir=' + tensorboard_logs])  # async
 	# os.system("sleep 5; open http://0.0.0.0:6006")
 	if(show_browser):
 		subprocess.Popen(["open", 'http://0.0.0.0:6006'])  # async
