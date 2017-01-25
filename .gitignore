@@ -1,3 +1,6 @@
 fonts.list
 checkpoint
 denseConv*
+clear-logs.sh
+ggraph
+update_and_train.sh
