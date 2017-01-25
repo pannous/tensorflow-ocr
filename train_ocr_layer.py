@@ -11,8 +11,8 @@ data = letter.batch()
 input_width, output_width=data.shape[0],data.shape[1]
 
 # learning_rate = 0.03 # divergence even on overfit
-learning_rate = 0.003 # quicker overfit
-# learning_rate = 0.0003
+# learning_rate = 0.003 # quicker overfit
+learning_rate = 0.0003
 
 nClasses =letter.nLetters
 training_steps = 500000
