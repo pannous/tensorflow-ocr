@@ -24,8 +24,13 @@ def baselineDeep(net):
 	# type: (layer.net) -> None
 	# net.batchnorm() # start lower, else no effect
 	# net.dense(hidden=200,depth=8,dropout=True) # 50%
-	net.dense(hidden=200,depth=5,bn=True) # BETTER!!
-	# net.dense(hidden=2000,depth=2,dropout=True)
+
+	# net.dense(hidden=200, depth=5, bn=True)  # BETTER!!
+	# Interesting: the losses dropping, 0.0 accuracy
+	# """Step 81000 Loss= 0.956690 Accuracy= 0.000 Time= 1004s 			Test Accuracy:  0.0"""
+
+	# net.dense(hidden=200, depth=5, bn=True)  # BETTER!!
+	net.dense(hidden=2000,depth=2,dropout=True)
 	# net.dense(200, depth=2, act=tf.nn.tanh)
 	# net.dense(400, depth=2, act=tf.nn.tanh)
 	# net.denseNet(20, depth=10)
