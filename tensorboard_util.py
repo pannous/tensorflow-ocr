@@ -2,6 +2,8 @@ import os
 import sys
 import subprocess  # NEW WAY!
 
+import tf
+
 if "win32" in sys.platform:
 	tensorboard_logs = './logs/' # windows friendly
 else:
@@ -32,7 +34,7 @@ def set_tensorboard_run(reset=False,auto_increment=True,run_nr=-1):
 	print("RUN NUMBER " + str(run_nr))
 	global logdir
 	if run_nr>0 and len(os.listdir(tensorboard_logs + 'run' + str(run_nr-1)))==0:
-		run_nr=run_nr-1 #   previous run was not successful
+		run_nr -= 1  #   previous run was not successful
 
 	logdir = tensorboard_logs + 'run' + str(run_nr)
 	if not os.path.exists(logdir):
@@ -64,7 +66,7 @@ def run_tensorboard(restart=False,show_browser=False):
 		# ,cwd="/usr/local/lib/python2.7/dist-packages/tensorflow/tensorboard"
 	subprocess.Popen(["tensorboard", '--logdir=' + tensorboard_logs])  # async
 	# os.system("sleep 5; open http://0.0.0.0:6006")
-	if(show_browser):
+	if show_browser:
 		subprocess.Popen(["open", 'http://0.0.0.0:6006'])  # async
 
 # run_tensorboard()
