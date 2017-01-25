@@ -39,7 +39,7 @@ def denseConv(net):
 	# type: (layer.net) -> None
 	print("Building dense-net")
 	# tf.image.crop_and_resize()
-	net.reshape(shape=[-1, 28, 28, 1])  # Reshape input picture
+	net.reshape(shape=[-1, size, size, 1])  # Reshape input picture
 	# net.conv([3, 3, 1, 64])
 	net.buildDenseConv()
 	# net.dense(96*3)
@@ -48,7 +48,7 @@ def denseConv(net):
 def alex(net):
 	# type: (layer.net) -> None
 	print("Building Alex-net")
-	net.reshape(shape=[-1, 28, 28, 1])  # Reshape input picture
+	net.reshape(shape=[-1, size, size, 1])  # Reshape input picture
 	# net.batchnorm()
 	net.conv([3, 3, 1, 64])
 	net.conv([3, 3, 64, 128])
