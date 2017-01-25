@@ -1,0 +1,9 @@
+tensorflow
+PIL
+# pip install -r requirements.txt
+# pip install --user -r requirements.txt 
+# pip install ImageDraw
+Pillow
+# PIL
+# ImageDraw
+# ImageFont
