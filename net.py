@@ -58,6 +58,7 @@ class net():
 			if not input_width: input_width, _ = self.get_data_shape()
 			self.input_width=input_width
 			self.last_width = self.input_width
+			self.last_shape = self.input_shape
 			self.output_width=output_width
 			self.num_classes=output_width
 			# self.batch_size=batch_size
@@ -74,15 +75,15 @@ class net():
 			else:
 				self.generate_model(model)
 
-
 	def get_data_shape(self):
 		if self.input_shape:
-			if len(self.input_shape)==1:return [self.input_shape[0],0]
+			if len(self.input_shape) == 1: return [self.input_shape[0], 0]
 			return self.input_shape[0], self.input_shape[1]
 		try:
-			return self.data.shape[0],self.data.shape[-1]
+			return self.data.shape[0], self.data.shape[-1]
 		except:
 			raise Exception("Data does not have shape")
+
 
 	def generate_model(self,model, name=''):
 		if not model: return self
@@ -373,6 +374,11 @@ class net():
 			self.optimize = tf.train.AdamOptimizer(self.learning_rate).minimize(self.cost)
 			self.accuracy=tf.maximum(0., 1- tf.sqrt(self.cost))
 
+
+	def debug_print(self, throughput, to_print=[]):
+		return tf.cond(self.train_phase, lambda: throughput, lambda: tf.Print(throughput, to_print + [nop()], "OK!"))
+
+
 	def next_batch(self,batch_size,session,test=False):
 		try:
 			if test:
@@ -414,6 +420,7 @@ class net():
 		step = 0 # show first
 		while step < steps:
 			batch_xs, batch_ys = self.next_batch(batch_size,session)
+			batch_xs=batch_xs.reshape([-1]+self.input_shape)
 			# print("step %d \r" % step)# end=' ')
 			# tf.train.shuffle_batch_join(example_list, batch_size, capacity=min_queue_size + batch_size * 16, min_queue_size)
 			# Fit training using batch data
@@ -447,6 +454,7 @@ class net():
 		# Calculate accuracy for 256 mnist test images
 
 		test_images, test_labels = self.next_batch(number,session,test=True)
+		test_images = test_images.reshape([-1] + self.input_shape)
 
 		feed_dict = {self.x: test_images, self.y: test_labels, self.keep_prob: 1., self.train_phase:False}
 		# accuracy,summary= self.session.run([self.accuracy, self.summaries], feed_dict=feed_dict)
@@ -457,5 +465,3 @@ class net():
 
 	# def inputs(self,data):
 	# 	self.inputs, self.labels = load_data()#...)
-	def debug_print(self, throughput, to_print=[]):
-		return tf.cond(self.train_phase, lambda :throughput, lambda:tf.Print(throughput, to_print+[nop()], "OK!"))
