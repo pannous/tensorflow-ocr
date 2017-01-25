@@ -7,7 +7,8 @@ import numpy as np
 from sys import platform
 from extensions import *
 
-overfit=True
+# overfit = True
+overfit = False
 if overfit:
 	min_size = 10  # 8#12
 	max_size = 10  # 48
