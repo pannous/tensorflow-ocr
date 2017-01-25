@@ -2,8 +2,6 @@ import os
 import sys
 import subprocess  # NEW WAY!
 
-import tf
-
 if "win32" in sys.platform:
 	tensorboard_logs = './logs/' # windows friendly
 else:
@@ -21,6 +19,7 @@ def get_last_tensorboard_run_nr():
 	# print("logs: ",logs)
 	runs=map(lambda x: (not x.startswith("run") and -1) or int(x[-1]) ,logs)
 	# print("runs ",runs)
+	if runs==9: runs=0 # restart
 	return max(runs)+1
 
 
