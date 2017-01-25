@@ -57,8 +57,8 @@ def denseConv(net):
 
 net = layer.net(denseConv, input_width=size, output_width=nClasses, learning_rate=learning_rate)
 # net.train(data=data,steps=50000,dropout=0.6,display_step=1,test_step=1) # debug
-net.train(data=data, steps=50000,dropout=0.6,display_step=5,test_step=20) # test
-# net.train(data=data, steps=training_iters, dropout=.6, display_step=10, test_step=1000) # run
+# net.train(data=data, steps=50000,dropout=0.6,display_step=5,test_step=20) # test
+net.train(data=data, steps=training_steps, dropout=.6, display_step=10, test_step=1000) # run
 # net.predict() # nil=random
 # net.generate(3)  # nil=random
 
