@@ -36,9 +36,13 @@ if not os.path.exists(checkpoint_dir):
 def nop():return 0
 def closest_unitary(A):
 	""" Calculate the unitary matrix U that is closest with respect to the operator norm distance to the general matrix A. """
-	import scipy
-	V, __, Wh = scipy.linalg.svd(A)
-	return np.matrix(V.dot(Wh))
+	try:
+		import scipy
+		V, __, Wh = scipy.linalg.svd(A)
+		return np.matrix(V.dot(Wh))
+	except:
+	 return A
+
 
 class net():
 
@@ -235,8 +239,8 @@ class net():
 	def dense(self, hidden=1024, depth=1, activation=tf.nn.tanh, dropout=False, parent=-1, norm=None,bn=False): #
 		if parent==-1: parent=self.last_layer
 		if bn:
-			dropout = False
 			print("dropout = False while using batchnorm")
+			dropout = False
 		shape = self.last_layer.get_shape()
 		if shape and len(shape)>2:
 			if len(shape)==3:
@@ -253,11 +257,11 @@ class net():
 			with tf.name_scope('Dense_{:d}'.format(hidden)) as scope:
 				print("Dense ", self.last_width, width)
 				nr = len(self.layers)
+				U= tf.random_uniform([self.last_width, width], minval=-1. / width, maxval=1. / width)
+				# U = np.random.rand(self.last_width, width) / (self.last_width + width)
 				if self.last_width == width:
-					U = closest_unitary(np.random.rand(self.last_width, width) / (self.last_width + width)) / weight_divider
-					weights = tf.Variable(U, name="weights_dense_" + str(nr),dtype=tf.float32)
-				else:
-					weights = tf.Variable(tf.random_uniform([self.last_width, width], minval=-1. / width, maxval=1. / width), name="weights_dense")
+					U = closest_unitary(U/ weight_divider) 
+				weights = tf.Variable(U, name="weights_dense_" + str(nr),dtype=tf.float32)
 				bias = tf.Variable(tf.random_uniform([width],minval=-1./width,maxval=1./width), name="bias_dense")
 				dense1 = tf.matmul(parent, weights, name='dense_'+str(nr))+ bias
 				tf.summary.histogram('dense_' + str(nr), dense1)
