@@ -1,7 +1,8 @@
-from .net import *  # py3
+from .net import *  
 from .tensorboard_util import *
 
-# PyCharm horrible auto-complete if separated into different modules
+# PyCharm has bad auto-complete if separated into different modules
+# THEREFORE, the following files are now all merged in net.py !
 # from conv import *
 # from batch_norm import *
 # from dense import *
