@@ -32,7 +32,8 @@ def set_tensorboard_run(reset=False,auto_increment=True,run_nr=-1):
 		clear_tensorboard()
 	print("RUN NUMBER " + str(run_nr))
 	global logdir
-	if run_nr>0 and len(os.listdir(tensorboard_logs + 'run' + str(run_nr-1)))==0:
+	last = tensorboard_logs + 'run' + str(run_nr - 1)
+	if run_nr>0 and (not os.path.exists(last) or len(os.listdir(last))==0):
 		run_nr -= 1  #   previous run was not successful
 
 	logdir = tensorboard_logs + 'run' + str(run_nr)

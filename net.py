@@ -41,10 +41,10 @@ def closest_unitary(A):
 		V, __, Wh = scipy.linalg.svd(A)
 		return np.matrix(V.dot(Wh))
 	except:
-	 return A
+		return A
 
 
-class net():
+class net:
 
 	def __init__(self,model,input_width=0,output_width=0,input_shape=[],name=0,learning_rate=default_learning_rate):
 		self.fully_connected=self.dense #alias
@@ -232,10 +232,15 @@ class net():
 		# self.add(tf.nn.max_pool(self.last_layer, ksize=[1, 4, 4, 1], strides=[1, 1, 1, 1], padding='SAME'))
 		self.add(tf.nn.max_pool(self.last_layer, ksize=[1, 4, 4, 1], strides=[1, 2, 2, 1], padding='SAME'))
 		# self.add(tf.nn.SpatialAveragePooling(8, 8)).add(nn.Reshape(nChannels))
-		if magic_factor==16:
-			self.reshape([-1, nChannels * 16])  # ready for classification
-		else:
-			self.reshape([-1,nChannels*4]) # ready for classification
+
+		shape = self.last_layer.get_shape()
+		nBytes = shape[1] * shape[2] * shape[3]
+		self.reshape([-1, int(nBytes)])  # ready for classification
+		#
+		# if magic_factor==16:
+		# 	self.reshape([-1, nChannels * 16])  # ready for classification
+		# else:
+		# 	self.reshape([-1,nChannels*4]) # ready for classification
 
 	# Today's most performant vision models don't use fully connected layers anymore (they use convolutional blocks till the end and then some parameterless global averaging layer).
 	# Fully connected layer
@@ -263,7 +268,7 @@ class net():
 				U= tf.random_uniform([self.last_width, width], minval=-1. / width, maxval=1. / width)
 				# U = np.random.rand(self.last_width, width) / (self.last_width + width)
 				if self.last_width == width:
-					U = closest_unitary(U/ weight_divider) 
+					U = closest_unitary(U/ weight_divider)
 				weights = tf.Variable(U, name="weights_dense_" + str(nr),dtype=tf.float32)
 				bias = tf.Variable(tf.random_uniform([width],minval=-1./width,maxval=1./width), name="bias_dense")
 				dense1 = tf.matmul(parent, weights, name='dense_'+str(nr))+ bias
@@ -463,6 +468,9 @@ class net():
 		print('\t'*3+"Test Accuracy: ",accuracy)
 		self.summary_writer.add_run_metadata(run_metadata, 'step #%03d' % step)
 		self.summary_writer.add_summary(summary,global_step=step)
+		if accuracy==1.0:
+			print("OVERFIT OK. Early stopping")
+			exit(0)
 
 	# def inputs(self,data):
 	# 	self.inputs, self.labels = load_data()#...)
