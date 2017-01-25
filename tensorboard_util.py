@@ -5,15 +5,17 @@ import subprocess  # NEW WAY!
 if "win32" in sys.platform:
 	tensorboard_logs = './logs/' # windows friendly
 else:
-	tensorboard_logs = '/tmp/tensorboard_logs/'
+tensorboard_logs = '/tmp/tensorboard_logs/'
 
 global logdir
 
 def get_last_tensorboard_run_nr():
-	if not os.path.exists(tensorboard_logs ):
-		os.system("mkdir " + tensorboard_logs )
+	try:
+		logs=subprocess.check_output(["ls", tensorboard_logs]).split("\n")
+	except:
+		os.system("mkdir " + tensorboard_logs)
+		print("first run!")
 		return 0
-	logs=subprocess.check_output(["ls", tensorboard_logs]).decode("utf-8").split("\n")
 	# print("logs: ",logs)
 	runs=map(lambda x: (not x.startswith("run") and -1) or int(x[-1]) ,logs)
 	# print("runs ",runs)
@@ -45,6 +47,8 @@ def nop():
 	# pass
 
 def show_tensorboard():
+		# add in /usr/local/lib/python2.7/site-packages/tensorflow/tensorboard/dist/index.html :
+		# <link rel="stylesheet" type="text/css" href="plottable/plottable.css"> due to BUG in tf 10.0
 		print("run: tensorboard --debug --logdir=" + tensorboard_logs+" and navigate to http://0.0.0.0:6006")
 
 def kill_tensorboard():
@@ -56,7 +60,8 @@ def current_logdir():
 
 def run_tensorboard(restart=False,show_browser=False):
 	if restart: kill_tensorboard()
-	subprocess.Popen(["tensorboard", '--logdir=' + tensorboard_logs])  # async
+		#  cd /usr/local/lib/python2.7/dist-packages/tensorflow/tensorboard/ in tf 10.0 due to BUG
+	subprocess.Popen(["tensorboard", '--logdir=' + tensorboard_logs],cwd="/usr/local/lib/python2.7/dist-packages/tensorflow/tensorboard")  # async
 	# os.system("sleep 5; open http://0.0.0.0:6006")
 	if(show_browser):
 		subprocess.Popen(["open", 'http://0.0.0.0:6006'])  # async
