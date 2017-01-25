@@ -1,8 +1,12 @@
 import os
+import sys
 import subprocess  # NEW WAY!
 
-# tensorboard_logs = '/tmp/tensorboard_logs/'
-tensorboard_logs = './logs/' # windows friendly
+if "win32" in sys.platform:
+	tensorboard_logs = './logs/' # windows friendly
+else:
+	tensorboard_logs = '/tmp/tensorboard_logs/'
+
 global logdir
 
 def get_last_tensorboard_run_nr():

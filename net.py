@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import time
 import numpy as np
+import tensorflow
 import tensorflow as tf
 from tensorflow.contrib.tensorboard.plugins import projector # for 3d PCA/ t-SNE
 from .tensorboard_util import *
@@ -120,14 +121,20 @@ class net():
 		self.last_shape = shape
 		self.last_width = shape[-1]
 
-	def batchnorm(self):
+	# BN also serve as a stochastic regularizer and makes dropout regularization redundant! Furthermore dropout never really helped when inserted between convolution layers and was most useful between fully connected layers.
+	# when applying batchnorm you can drop biases [redundant: BN(x)=ax+b] and must increase learning rate!! ++
+	def batchnorm(self,center=False): # for conv2d and fully_connected [only!?]
 		from tensorflow.contrib.layers.python.layers import batch_norm as batch_norm
 		with tf.name_scope('batchnorm') as scope:
 			input = self.last_layer
 			# mean, var = tf.nn.moments(input, axes=[0, 1, 2])
 			# self.batch_norm = tf.nn.batch_normalization(input, mean, var, offset=1, scale=1, variance_epsilon=1e-6)
 			# self.last_layer=self.batch_norm
-			train_op=batch_norm(input, is_training=True, center=False, updates_collections=None, scope=scope)
+			# activation_fn all in one go!  sigmoid: center=true! relu:center=False?
+			# is_training why not automatic??  bad implementation: placeholder -> needs_moments
+			# vs low level nn.batch_normalization(inputs, mean, variance, beta, gamma, epsilon)   # nn.fused_batch_norm
+			# data_format: A string. `NHWC` vs NCHW WHY NOT AUTO??
+			train_op=batch_norm(input, is_training=True, center=center, updates_collections=None, scope=scope)
 			test_op=batch_norm(input, is_training=False, updates_collections=None, center=False,scope=scope, reuse=True)
 			self.add(tf.cond(self.train_phase,lambda:train_op,lambda:test_op))
 
@@ -223,9 +230,13 @@ class net():
 		else:
 			self.reshape([-1,nChannels*4]) # ready for classification
 
+	# Today's most performant vision models don't use fully connected layers anymore (they use convolutional blocks till the end and then some parameterless global averaging layer).
 	# Fully connected layer
-	def dense(self, hidden=1024, depth=1, activation=tf.nn.tanh, dropout=False, parent=-1, norm=None): #
+	def dense(self, hidden=1024, depth=1, activation=tf.nn.tanh, dropout=False, parent=-1, norm=None,bn=False): #
 		if parent==-1: parent=self.last_layer
+		if bn:
+			dropout = False
+			print("dropout = False while using batchnorm")
 		shape = self.last_layer.get_shape()
 		if shape and len(shape)>2:
 			if len(shape)==3:
@@ -254,6 +265,7 @@ class net():
 				tf.summary.histogram('bias_' + str(nr), bias)
 				tf.summary.histogram('dense_' + str(nr) + '/sparsity', tf.nn.zero_fraction(dense1))
 				tf.summary.histogram('weights_' + str(nr) + '/sparsity', tf.nn.zero_fraction(weights))
+				if bn:self.batchnorm(center=True)
 				if activation: dense1 = activation(dense1)
 				if norm: dense1 = self.norm(dense1,lsize=1)
 				if dropout: dense1 = tf.nn.dropout(dense1, self.keep_prob)
@@ -295,20 +307,16 @@ class net():
 			print("output shape ",conv1.get_shape())
 			self.add(conv1)
 
-	def rnn(self):
-		# data = tf.placeholder(tf.float32, [None, width, height],name="data")  # Number of examples, input, dimension
-		# target = tf.placeholder(tf.float32, [None, classes],name="target")
-		# num_hidden = 24
-		num_hidden = 42
+	def rnn(self, num_hidden=42):
+		# tf.contrib.rnn.BasicLSTMCell() OLD
+		# tensorflow.python.ops.rnn_cell.BasicLSTMCell()
+		# tensorflow.models.rnn.BasicLSTMCell()
 		cell = tf.nn.rnn_cell.LSTMCell(num_hidden)
 		val, _ = tf.nn.dynamic_rnn(cell, self.last_layer, dtype=tf.float32)
-		val = tf.nn.dropout(val,0.8)
+		# Dropout does actually work quite well between recurrent units if you tie the dropout masks across time
+		# val = tf.nn.dropout(val,self.keep_prob) # deprecated by batchnorm
 		val = tf.transpose(val, [1, 0, 2])
 		self.last = tf.gather(val, int(val.get_shape()[0]) - 1)
-		# weight = tf.Variable(tf.truncated_normal([num_hidden, int(target.get_shape()[1])]))
-		# bias = tf.Variable(tf.constant(0.1, shape=[target.get_shape()[1]]))
-		# mistakes = tf.not_equal(tf.argmax(target, 1), tf.argmax(prediction, 1))
-		# error = tf.reduce_mean(tf.cast(mistakes, tf.float32))
 
 	def classifier(self,classes=0):  # Define loss and optimizer
 		if not classes: classes = self.num_classes
