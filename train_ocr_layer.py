@@ -15,15 +15,10 @@ batch_size = 64
 
 def baseline(net):
 	# type: (layer.net) -> None
-	# best with lr ~0.001
-	global learning_rate
-	learning_rate = 0.001
 	# net.dense(400, activation=tf.nn.tanh,bn=1)  # Test Accuracy:  0.6875 with batch_norm
 	net.dense(400, activation=tf.nn.tanh)  # 	Test; Accuracy:  0.609375
 	# net.dense(400,depth=3, activation=tf.nn.sigmoid, bn=1)
-
-
-# 0.996 YAY  only 0.985 on full set, Step 5000 flat
+  # Step 156000 Loss= 0.871664 Accuracy= 0.700 Time= 1400s 			Test Accuracy:  0.53125 very slow + low
 
 def baselineDeep(net):
 	# type: (layer.net) -> None
@@ -31,19 +26,16 @@ def baselineDeep(net):
 	# net.dense(hidden=200,depth=8,dropout=True) # 50%
 	net.dense(hidden=200,depth=5,bn=True) # BETTER!!
 	# net.dense(hidden=2000,depth=2,dropout=True)
-	# net.dense(400,act=None)#  # ~95% we can do better:
-	# net.dense(200, depth=2, act=tf.nn.tanh)# 0.98 on full set, Step 5000 flat
-	# net.dense(400, depth=2, act=tf.nn.tanh)# 0.98 on full set
+	# net.dense(200, depth=2, act=tf.nn.tanh)
+	# net.dense(400, depth=2, act=tf.nn.tanh)
 	# net.denseNet(20, depth=10)
 	# net.denseNet(40, depth=4)
 
 	# net.dense(100,dropout=True) # Test Accuracy: 0.960938 LESS IS MORE!
 	# net.classifier() # 10 classes auto
-	return # 0.957% without any model!!
+	return
 
-# OH, it does converge!!
-# Step 12890 Loss= 0.272316 Accuracy= 0.984 			Test Accuracy: 0.9975 WOW, record on mnist!
-# Step 4290 Loss= 0.000048 Accuracy= 1.000 			Test Accuracy:  1.0
+# OH, it does converge on mnist
 def denseConv(net):
 	# type: (layer.net) -> None
 	print("Building dense-net")
@@ -56,7 +48,6 @@ def denseConv(net):
 
 
 # OK, not bad, Alex!
-#  Step 6490 Loss= 0.000908 Accuracy= 1.000                        Test Accuracy: 0.995
 def alex(net):
 	# type: (layer.net) -> None
 	print("Building Alex-net")
@@ -69,8 +60,8 @@ def alex(net):
 	net.dense(1024,activation=tf.nn.relu)
 
 
-net = layer.net(baseline, input_width=28, output_width=nClasses, learning_rate=learning_rate)
-# net = layer.net(baselineDeep, input_width=28, output_width=nClasses, learning_rate=learning_rate)
+# net = layer.net(baseline, input_width=28, output_width=nClasses, learning_rate=learning_rate)
+net = layer.net(baselineDeep, input_width=28, output_width=nClasses, learning_rate=learning_rate)
 # net=layer.net(alex,input_width=28, output_width=nClasses, learning_rate=learning_rate) # NOPE!?
 # net=layer.net(denseConv, input_width=28, output_width=nClasses,learning_rate=learning_rate)
 # net.train(steps=50000,dropout=0.6,display_step=1,test_step=1) # debug
