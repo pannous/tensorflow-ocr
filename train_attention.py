@@ -41,7 +41,7 @@ def denseConv(net):
 	# tf.image.crop_and_resize()
 	net.reshape(shape=[-1, size, size, 1])  # Reshape input picture
 	# net.conv([3, 3, 1, 64])
-	net.buildDenseConv()
+	net.buildDenseConv(nBlocks=1)
 	# net.dense(96*3)
 	net.classifier() # 10 classes auto
 

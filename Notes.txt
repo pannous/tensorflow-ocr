@@ -1,0 +1,31 @@
+Interesting overfit behavior:
+Step 0 Loss= 0.000000 Accuracy= 0.000 Time= 13s 			Test Accuracy:  0.0
+Step 9400 Loss= 0.000000 Accuracy= 0.800 Time= 203s 			Test Accuracy:  0.484375
+Step 18200 Loss= 0.000000 Accuracy= 0.000 Time= 377s 			Test Accuracy:  0.0
+
+ probably missing regularizer
+
+Building dense-net
+N=1
+input  shape  [-1, 10, 10, 1]
+conv   shape  [3, 3, 1, 64]
+output shape  (?, 5, 5, 64)
+input  shape  (?, 5, 5, 64)
+conv   shape  [3, 3, 64, 12]
+output shape  (?, 5, 5, 12)
+concat  (?, 5, 5, 76)
+input  shape  (?, 5, 5, 76)
+conv   shape  [1, 1, 76, 76]
+output shape  (?, 3, 3, 76)
+input  shape  (?, 3, 3, 76)
+conv   shape  [3, 3, 76, 12]
+output shape  (?, 3, 3, 12)
+concat  (?, 3, 3, 88)
+input  shape  (?, 3, 3, 88)
+conv   shape  [1, 1, 88, 88]
+output shape  (?, 2, 2, 88)
+input  shape  (?, 2, 2, 88)
+conv   shape  [3, 3, 88, 12]
+output shape  (?, 2, 2, 12)
+concat  (?, 2, 2, 100)
+Dense  100 2

@@ -4,3 +4,4 @@ denseConv*
 clear-logs.sh
 ggraph
 update_and_train.sh
+checkpoint*
