@@ -77,6 +77,7 @@ class net():
 
 	def get_data_shape(self):
 		if self.input_shape:
+			if len(self.input_shape)==1:return [self.input_shape[0],0]
 			return self.input_shape[0], self.input_shape[1]
 		try:
 			return self.data.shape[0],self.data.shape[-1]
@@ -90,19 +91,16 @@ class net():
 			self.train_phase = tf.placeholder(tf.bool, name='train_phase')
 			with tf.device(_cpu): self.global_step = tf.Variable(0)  # dont set, feed or increment global_step, tensorflow will do it automatically
 		with tf.name_scope('data'):
-			if len(self.input_shape)==1:
-				self.input_width=self.input_shape[0]
-			elif self.input_shape:
+			if self.input_shape and len(self.input_shape)==2:
 				shape_ = [None, self.input_shape[0], self.input_shape[1]] # batch:None
 				# todo [None, *self.input_shape]
 				self.x = x = self.input = tf.placeholder(tf.float32, shape_, name="input_x")
-				self.last_layer = x
 				self.last_shape = x
 			elif self.input_width:
 				self.x = x = self.target = tf.placeholder(tf.float32, [None, self.input_width], name = "input_x")
-				self.last_layer=x
 			else:
 				raise Exception("need input_shape or input_width by now")
+			self.last_layer=self.x
 			self.y = y = self.target = tf.placeholder(tf.float32, [None, self.output_width],name="target_y")
 		with tf.name_scope('model'):
 			model(self)
@@ -125,10 +123,11 @@ class net():
 
 	# BN also serve as a stochastic regularizer and makes dropout regularization redundant! Furthermore dropout never really helped when inserted between convolution layers and was most useful between fully connected layers.
 	# when applying batchnorm you can drop biases [redundant: BN(x)=ax+b] and must increase learning rate!! ++
-	def batchnorm(self,center=False): # for conv2d and fully_connected [only!?]
+	def batchnorm(self, input=None,center=False): # for conv2d and fully_connected [only!?]
+		if input is None: input= self.last_layer
 		from tensorflow.contrib.layers.python.layers import batch_norm as batch_norm
 		with tf.name_scope('batchnorm') as scope:
-			input = self.last_layer
+
 			# mean, var = tf.nn.moments(input, axes=[0, 1, 2])
 			# self.batch_norm = tf.nn.batch_normalization(input, mean, var, offset=1, scale=1, variance_epsilon=1e-6)
 			# self.last_layer=self.batch_norm
@@ -136,9 +135,14 @@ class net():
 			# is_training why not automatic??  bad implementation: placeholder -> needs_moments
 			# vs low level nn.batch_normalization(inputs, mean, variance, beta, gamma, epsilon)   # nn.fused_batch_norm
 			# data_format: A string. `NHWC` vs NCHW WHY NOT AUTO??
+			# activation_fn inline
 			train_op=batch_norm(input, is_training=True, center=center, updates_collections=None, scope=scope)
 			test_op=batch_norm(input, is_training=False, updates_collections=None, center=False,scope=scope, reuse=True)
-			self.add(tf.cond(self.train_phase,lambda:train_op,lambda:test_op))
+			output = tf.cond(self.train_phase, lambda: train_op, lambda: test_op)
+			# output=self.debug_print(output)
+			self.add(output)
+			return output
+
 
 	def addLayer(self, nChannels, nOutChannels, do_dropout):
 		ident=self.last_layer
@@ -234,7 +238,7 @@ class net():
 
 	# Today's most performant vision models don't use fully connected layers anymore (they use convolutional blocks till the end and then some parameterless global averaging layer).
 	# Fully connected layer
-	def dense(self, hidden=1024, depth=1, activation=tf.nn.tanh, dropout=False, parent=-1, norm=None,bn=False): #
+	def dense(self, hidden=1024, depth=1, activation=tf.nn.tanh, dropout=False, parent=-1, bn=False): #
 		if parent==-1: parent=self.last_layer
 		if bn:
 			print("dropout = False while using batchnorm")
@@ -267,9 +271,8 @@ class net():
 				tf.summary.histogram('bias_' + str(nr), bias)
 				tf.summary.histogram('dense_' + str(nr) + '/sparsity', tf.nn.zero_fraction(dense1))
 				tf.summary.histogram('weights_' + str(nr) + '/sparsity', tf.nn.zero_fraction(weights))
-				if bn:self.batchnorm(center=True)
+				if bn: dense1 =self.batchnorm(dense1,center=True)
 				if activation: dense1 = activation(dense1)
-				if norm: dense1 = self.norm(dense1,lsize=1)
 				if dropout: dense1 = tf.nn.dropout(dense1, self.keep_prob)
 				self.layers.append(dense1)
 				self.last_layer = parent = dense1
@@ -326,7 +329,7 @@ class net():
 		with tf.name_scope('prediction'):# prediction
 			if self.last_width!=classes:
 				# print("Automatically adding dense prediction")
-				self.dense(hidden=classes, activation= None, dropout = False)
+				self.dense(hidden=classes, activation=None, dropout=False)
 			# cross_entropy = -tf.reduce_sum(y_*y)
 		with tf.name_scope('classifier'):
 			y_=self.target
@@ -438,17 +441,6 @@ class net():
 		config = projector.ProjectorConfig()
 		if visualize_cluster: # EMBEDDINGs ++ https://github.com/tensorflow/tensorflow/issues/6322
 			embedding = config.embeddings.add()  # You can add multiple embeddings. Here just one.
-			embedding.tensor_name = self.last_layer.name # last_dense
-			# embedding.tensor_path
-			# embedding.tensor_shape
-			embedding.sprite.image_path = PATH_TO_SPRITE_IMAGE
-			# help(embedding.sprite)
-			embedding.sprite.single_image_dim.extend([width, hight]) # if mnist   thumbnail
-			# embedding.single_image_dim.extend([28, 28]) # if mnist   thumbnail
-			# Link this tensor to its metadata file (e.g. labels).
-			embedding.metadata_path = os.path.join(LOG_DIR, 'metadata.tsv')
-			# Saves a configuration file that TensorBoard will read during startup.
-			projector.visualize_embeddings(self.summary_writer, config)
 
 		run_metadata = tf.RunMetadata()
 		run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
@@ -465,3 +457,5 @@ class net():
 
 	# def inputs(self,data):
 	# 	self.inputs, self.labels = load_data()#...)
+	def debug_print(self, throughput, to_print=[]):
+		return tf.cond(self.train_phase, lambda :throughput, lambda:tf.Print(throughput, to_print+[nop()], "OK!"))
