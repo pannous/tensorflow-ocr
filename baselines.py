@@ -40,8 +40,8 @@ def baselineWide(net):
 
 
 # net.dense(hidden=200, depth=5, bn=True)  # BETTER!!
-# Interesting: the losses dropping, 0.0 accuracy
 
+# Interesting: losses dropping, still 0.0 accuracy! => predicting zeros!?!
 size=10
 def baselineDenseConv(net):
 	# type: (layer.net) -> None

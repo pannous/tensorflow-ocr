@@ -401,7 +401,7 @@ class net:
 	def train(self,data=0,steps=-1,dropout=None,display_step=10,test_step=200,batch_size=10,do_resume=False): #epochs=-1,
 		print("learning_rate: %f"%self.learning_rate)
 		if data: self.data=data
-		steps = 9999999 if steps==-1 else steps
+		steps = 9999999 if steps<=0 else steps
 		session=self.session
 		# with tf.device(_cpu):
 		# t = tf.verify_tensor_all_finite(t, msg)
