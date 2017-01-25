@@ -4,6 +4,7 @@
 import io
 import math
 import sys
+import inspect
 
 py2 = sys.version < '3'
 py3 = sys.version >= '3'
@@ -32,16 +33,16 @@ if py3:
 	#   class range(xrange):
 	#     pass
 
-else:
+else: # Python 2 needs:
 	class bytes(str):
 		pass
 	class char(str):
 		pass
 # char = char
 
-
 class byte(str):
 	pass
+	
 # byte= byte
 file=file # nice trick: native py2 class or local py3 class
 unicode = unicode
@@ -68,8 +69,9 @@ def type_name(x):
 
 def xx(y):
 	if type_name(y).startswith('x'):   return y
-	if isinstance(y, xstr):   return y
-	if isinstance(y, xlist):   return y
+	# if isinstance(y, xstr):   return y
+	# if isinstance(y, xlist):   return y
+	if isinstance(y, xrange): return xlist(y)
 	if isinstance(y, bool):  return y #xbool(y)
 	if isinstance(y, list):  return xlist(y)
 	if isinstance(y, str):   return xstr(y)
@@ -80,7 +82,6 @@ def xx(y):
 	if isinstance(y, file):   return xfile(y)
 	if isinstance(y, char):  return xchar(y)
 	if isinstance(y, byte):  return xchar(y)
-	if isinstance(y, xrange): return xlist(y)
 	if py3 and isinstance(y, range): return xlist(y)
 	print("No extension for type %s" % type(y))
 	return y
@@ -979,13 +980,13 @@ class xfloat(float):
 	def value(self):
 		return self
 
-	def wrap(self):
-		return "INT2NUM(#{self.to_s})"
-
 	def number(self):
 		return self
 
 	def _and(self, x):
+		return self + x
+
+	def add(self, x):
 		return self + x
 
 	def plus(self, x):
@@ -1016,8 +1017,6 @@ class xfloat(float):
 		if self.isa(clazz): return True
 		return False
 
-	def add(self, x):
-		return self + x
 
 	def increase(self, by=1):
 		return self + by  # Can't change the value of numeric self!!
@@ -1029,6 +1028,12 @@ class xfloat(float):
 		return self > x
 
 	def smaller(self, x):
+		return self < x
+
+	def is_bigger(self, x):
+		return self > x
+
+	def is_smaller(self, x):
 		return self < x
 
 	def to_the_power_of(self, x):
@@ -1146,6 +1151,11 @@ def read_binary(file):
 def dump(o, file="dump.bin"):
 	pickle.dump(o, open(file, 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
 	print("saved to '" + file + "'")
+save=dump
+write=dump # ok for plain bytes too++
+
+def write_direct(data,file):
+	open(file, 'wb').write(data)
 
 
 def load_pickle(file_name="dump.bin"):
@@ -1163,10 +1173,36 @@ def undump(file_name="dump.bin"):
 def restore(file_name="dump.bin"):
 	return pickle.load(open(file_name, 'rb'))
 
+def run(cmd):
+	os.system(cmd)
 
+def exists(file):
+	os.path.exists(file)
 # class Encoding:
 #     pass
 
+
+def find_in_module(module,match="",recursive=True): # all
+  if isinstance(module,str): 
+  	module=sys.modules[module]
+  for name, obj in inspect.getmembers(module):
+      # if inspect.isclass(obj):
+      if match in name:
+        print(obj)
+      if inspect.ismodule(obj) and recursive and obj!=module:
+      	if module.__name__ in obj.__name__:
+      		# print("SUBMODULE: %s"%obj)
+      		find_in_module(obj,match)
+
+
+
+def find_class(match=""): # all
+  import sys, inspect
+  for module in sys.modules.keys(): # sys.modules[module] #by key
+    for name, obj in inspect.getmembers(sys.modules[module]):
+        if inspect.isclass(obj):
+          if match in str(obj):
+            print(obj)
 
 # @extension
 # class Math:

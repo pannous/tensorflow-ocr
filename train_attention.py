@@ -4,6 +4,17 @@ import layer
 import letter
 from letter import Target,batch
 
+# patience pays of !!
+"""current logdir: ./logs/run10
+Step 0 Loss= 9.466945 Accuracy= 0.300 Time= 23s 			Test Accuracy:  0.203125
+Step 100 Loss= 2.384412 Accuracy= 0.300 Time= 36s 			Test Accuracy:  0.203125
+Step 200 Loss= 3.208869 Accuracy= 0.300 Time= 48s 			Test Accuracy:  0.203125
+Step 300 Loss= 5.424779 Accuracy= 0.300 Time= 61s 			Test Accuracy:  0.203125
+Step 700 Loss= 8.323677 Accuracy= 0.200 Time= 110s 			Test Accuracy:  0.203125
+...
+Step 1200 Loss= 3.024800 Accuracy= 0.500 Time= 171s 			Test Accuracy:  0.703125
+Step 1300 Loss= 0.815680 Accuracy= 0.800 Time= 183s 			Test Accuracy:  0.765625
+Step 1500 Loss= 4.893371 Accuracy= 0.900 Time= 207s 			Test Accuracy:  0.75"""
 
 # learning_rate = 0.0003
 target=Target.position
@@ -45,9 +56,9 @@ def alex(net):
 	net.dense(1024,activation=tf.nn.relu)
 
 
-net=layer.net(baseline, input_shape=[28,28], output_width=nClasses,learning_rate=0.001)
+# net=layer.net(baseline, input_shape=[28,28], output_width=nClasses,learning_rate=0.001)
 # net=layer.net(alex,data, learning_rate=0.001) # NOPE!?
-# net=layer.net(denseConv, data=data, output_width=-1,learning_rate=learning_rate)
+net=layer.net(denseConv, input_shape=[28,28], output_width=nClasses,learning_rate=learning_rate)
 
 # net.train(steps=50000,dropout=0.6,display_step=1,test_step=1) # debug
 # net.train(steps=50000,dropout=0.6,display_step=5,test_step=20) # test

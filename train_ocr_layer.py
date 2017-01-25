@@ -3,7 +3,7 @@
 import tensorflow as tf
 import layer
 import letter
-
+# layer.clear_tensorboard()
 data = letter.batch()
 input_width, output_width=data.shape[0],data.shape[1]
 
@@ -13,15 +13,25 @@ training_iters = 500000
 batch_size = 64
 
 
-# best with lr ~0.001
 def baseline(net):
+	# type: (layer.net) -> None
+	# best with lr ~0.001
+	global learning_rate
+	learning_rate = 0.001
+	# net.dense(400, activation=tf.nn.tanh,bn=1)  # Test Accuracy:  0.6875 with batch_norm
+	net.dense(400, activation=tf.nn.tanh)  # 	Test; Accuracy:  0.609375
+	# net.dense(400,depth=3, activation=tf.nn.sigmoid, bn=1)
+
+
+# 0.996 YAY  only 0.985 on full set, Step 5000 flat
+
+def baselineDeep(net):
 	# type: (layer.net) -> None
 	# net.batchnorm() # start lower, else no effect
 	# net.dense(hidden=200,depth=8,dropout=True) # 50%
-	# net.dense(hidden=200,depth=8,dropout=False) # BETTER!!
+	net.dense(hidden=200,depth=5,bn=True) # BETTER!!
 	# net.dense(hidden=2000,depth=2,dropout=True)
 	# net.dense(400,act=None)#  # ~95% we can do better:
-	net.dense(400, activation=tf.nn.tanh)# 0.996 YAY  only 0.985 on full set, Step 5000 flat
 	# net.dense(200, depth=2, act=tf.nn.tanh)# 0.98 on full set, Step 5000 flat
 	# net.dense(400, depth=2, act=tf.nn.tanh)# 0.98 on full set
 	# net.denseNet(20, depth=10)
@@ -59,11 +69,22 @@ def alex(net):
 	net.dense(1024,activation=tf.nn.relu)
 
 
-net=layer.net(baseline, input_width=28, output_width=nClasses, learning_rate=learning_rate)
+net = layer.net(baseline, input_width=28, output_width=nClasses, learning_rate=learning_rate)
+# net = layer.net(baselineDeep, input_width=28, output_width=nClasses, learning_rate=learning_rate)
 # net=layer.net(alex,input_width=28, output_width=nClasses, learning_rate=learning_rate) # NOPE!?
 # net=layer.net(denseConv, input_width=28, output_width=nClasses,learning_rate=learning_rate)
 # net.train(steps=50000,dropout=0.6,display_step=1,test_step=1) # debug
 # net.train(steps=50000,dropout=0.6,display_step=5,test_step=20) # test
-net.train(data=data, steps=training_iters, dropout=.6, display_step=10, test_step=100) # run
+net.train(data=data, steps=training_iters, dropout=.6, display_step=10, test_step=1000) # run
 # net.predict() # nil=random
 # net.generate(3)  # nil=random
+
+# refeed projection results as input via partial_run
+# a = array_ops.placeholder(dtypes.float32, shape=[])
+# b = array_ops.placeholder(dtypes.float32, shape=[])
+# c = array_ops.placeholder(dtypes.float32, shape=[])
+# r1 = math_ops.add(a, b)
+# r2 = math_ops.mul(r1, c)
+# h = sess.partial_run_setup([r1, r2], [a, b, c])
+# res = sess.partial_run(h, r1, feed_dict={a: 1, b: 2})
+# res = sess.partial_run(h, r2, feed_dict={c: res})
