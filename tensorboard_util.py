@@ -5,7 +5,7 @@ import subprocess  # NEW WAY!
 if "win32" in sys.platform:
 	tensorboard_logs = './logs/' # windows friendly
 else:
-tensorboard_logs = '/tmp/tensorboard_logs/'
+	tensorboard_logs = '/tmp/tensorboard_logs/'
 
 global logdir
 
