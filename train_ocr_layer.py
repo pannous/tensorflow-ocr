@@ -11,7 +11,7 @@ learning_rate = 0.0003
 nClasses =letter.nLetters
 training_iters = 500000
 batch_size = 64
-
+size = letter.max_size
 
 def baseline(net):
 	# type: (layer.net) -> None
@@ -65,8 +65,8 @@ def alex(net):
 	net.dense(1024,activation=tf.nn.relu)
 
 
-# net = layer.net(baseline, input_width=28, output_width=nClasses, learning_rate=learning_rate)
-net = layer.net(baselineDeep, input_width=28, output_width=nClasses, learning_rate=learning_rate)
+net = layer.net(baseline, input_width=size, output_width=nClasses, learning_rate=learning_rate)
+# net = layer.net(baselineDeep, input_width=28, output_width=nClasses, learning_rate=learning_rate)
 # net=layer.net(alex,input_width=28, output_width=nClasses, learning_rate=learning_rate) # NOPE!?
 # net=layer.net(denseConv, input_width=28, output_width=nClasses,learning_rate=learning_rate)
 # net.train(steps=50000,dropout=0.6,display_step=1,test_step=1) # debug

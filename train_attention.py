@@ -20,6 +20,7 @@ Step 1500 Loss= 4.893371 Accuracy= 0.900 Time= 207s 			Test Accuracy:  0.75"""
 target=Target.position
 learning_rate = 0.0001
 nClasses = letter.nClasses[target]
+size = letter.max_size
 training_iters = 500000
 batch_size = 64
 data = batch(batch_size,target)
@@ -58,7 +59,7 @@ def alex(net):
 
 # net=layer.net(baseline, input_shape=[28,28], output_width=nClasses,learning_rate=0.001)
 # net=layer.net(alex,data, learning_rate=0.001) # NOPE!?
-net=layer.net(denseConv, input_shape=[28,28], output_width=nClasses,learning_rate=learning_rate)
+net=layer.net(denseConv, input_shape=[size, size], output_width=nClasses,learning_rate=learning_rate)
 
 # net.train(steps=50000,dropout=0.6,display_step=1,test_step=1) # debug
 # net.train(steps=50000,dropout=0.6,display_step=5,test_step=20) # test

@@ -7,17 +7,26 @@ import numpy as np
 from sys import platform
 from extensions import *
 
-min_size=8#8#12
-max_size=28 #48
-max_padding=2
-extra_y = 0 # 10 # for oversized letters g,...
+overfit=True
+if overfit:
+	min_size = 10  # 8#12
+	max_size = 10  # 48
+	max_padding = 1
+	extra_y = 0  # 10 # for oversized letters g,...
+	min_char = 32
+	max_angle = 0
+else:
+	min_size=8#8#12
+	max_size=28 #48
+	max_padding=2
+	extra_y = 0 # 10 # for oversized letters g,...
+	min_char=32
+	max_angle=30#40
+
 sizes=range(min_size,max_size)
 if min_size==max_size: sizes=[min_size]
-min_char=32
 letterz= list(map(chr, range(min_char, 128)))
 nLetters=len(letterz)
-max_angle=30#40
-
 
 
 def find_fonts():
@@ -54,6 +63,8 @@ fontnames=readlines("fonts.list")
 # fonts=['Arial.ttf']
 # check_fonts()
 check_fonts()
+if overfit:
+	fontnames=fontnames[0:1] # ONLY 2 to overfit
 
 styles=['regular','light','medium','bold','italic']
 # Regular Medium Heavy Demi 'none','normal', Subsetted Sans #,'underline','strikethrough']
