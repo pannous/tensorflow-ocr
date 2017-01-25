@@ -196,7 +196,8 @@ class net:
 		self.last_width = width
 
 	# Densely Connected Convolutional Networks https://arxiv.org/abs/1608.06993
-	def buildDenseConv(self, nBlocks=3, magic_factor=1):
+	def buildDenseConv(self, nBlocks=3, nChannels=64, magic_factor=0):
+		if magic_factor: print("magic_factor DEPRECATED!")
 		depth = 3 * nBlocks + 4
 		if  (depth - 4) % 3 :  raise Exception("Depth must be 3N + 4! (4,7,10,...) ")  # # layers in each denseblock
 		N = (depth - 4) // 3
@@ -205,7 +206,7 @@ class net:
 		# dropRate = self.keep_prob # nil to disable dropout, non - zero number to enable dropout and set drop rate
 		# # channels before entering the first denseblock ??
 		# set it to be comparable with growth rate ??
-		nChannels = 64
+
 		# nChannels = 16
 		growthRate = 12
 		self.conv([3,3,1,nChannels])
@@ -236,11 +237,6 @@ class net:
 		shape = self.last_layer.get_shape()
 		nBytes = shape[1] * shape[2] * shape[3]
 		self.reshape([-1, int(nBytes)])  # ready for classification
-		#
-		# if magic_factor==16:
-		# 	self.reshape([-1, nChannels * 16])  # ready for classification
-		# else:
-		# 	self.reshape([-1,nChannels*4]) # ready for classification
 
 	# Today's most performant vision models don't use fully connected layers anymore (they use convolutional blocks till the end and then some parameterless global averaging layer).
 	# Fully connected layer
