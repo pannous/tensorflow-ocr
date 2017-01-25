@@ -2,11 +2,11 @@ from __future__ import print_function
 
 import time
 import numpy as np
-import tensorflow
 import tensorflow as tf
 from tensorflow.contrib.tensorboard.plugins import projector # for 3d PCA/ t-SNE
 from .tensorboard_util import *
-slim = tf.contrib.slim
+# slim = tf.contrib.slim
+print("tf.__version__:%s"% tf.__version__)
 
 start = int(time.time())
 
@@ -47,6 +47,7 @@ def closest_unitary(A):
 class net():
 
 	def __init__(self,model,input_width=0,output_width=0,input_shape=[],name=0,learning_rate=default_learning_rate):
+		self.fully_connected=self.dense #alias
 		device = _gpu if gpu else _cpu
 		device = None # auto
 		print("Using device ",device)
@@ -111,9 +112,6 @@ class net():
 
 	def dropout(self,keep_rate=0.6):
 		self.add(tf.nn.dropout(self.last_layer,keep_rate))
-
-	def	fully_connected(self,hidden=1024, depth=1, activation=tf.nn.tanh, dropout=False, parent=-1, norm=None): #):
-		return self.dense()
 
 	def add(self, layer):
 		self.layers.append(layer)

@@ -2,8 +2,6 @@ import os
 import sys
 import subprocess  # NEW WAY!
 
-import tf
-
 if "win32" in sys.platform:
 	tensorboard_logs = './logs/' # windows friendly
 else:
