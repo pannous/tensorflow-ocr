@@ -420,7 +420,7 @@ class net():
 		step = 0 # show first
 		while step < steps:
 			batch_xs, batch_ys = self.next_batch(batch_size,session)
-			batch_xs=batch_xs.reshape([-1]+self.input_shape)
+			# batch_xs=np.array(batch_xs).reshape([-1]+self.input_shape)
 			# print("step %d \r" % step)# end=' ')
 			# tf.train.shuffle_batch_join(example_list, batch_size, capacity=min_queue_size + batch_size * 16, min_queue_size)
 			# Fit training using batch data
@@ -454,7 +454,7 @@ class net():
 		# Calculate accuracy for 256 mnist test images
 
 		test_images, test_labels = self.next_batch(number,session,test=True)
-		test_images = test_images.reshape([-1] + self.input_shape)
+		# test_images = np.array(test_images).reshape([-1] + self.input_shape)
 
 		feed_dict = {self.x: test_images, self.y: test_labels, self.keep_prob: 1., self.train_phase:False}
 		# accuracy,summary= self.session.run([self.accuracy, self.summaries], feed_dict=feed_dict)
