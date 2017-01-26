@@ -20,7 +20,8 @@ batch_size = 64
 size = letter.max_size
 
 
-# OH, it does converge on mnist
+# OH, it does converge
+# Test Accuracy:  ~0.875 Step 1.000.000 52148s
 def denseConv(net):
 	# type: (layer.net) -> None
 	print("Building dense-net")
@@ -58,7 +59,7 @@ def denseConv(net):
 net = layer.net(denseConv, input_width=size, output_width=nClasses, learning_rate=learning_rate)
 # net.train(data=data,steps=50000,dropout=0.6,display_step=1,test_step=1) # debug
 # net.train(data=data, steps=training_steps,dropout=0.6,display_step=5,test_step=20) # test
-net.train(data=data, steps=-1, dropout=.6, display_step=10, test_step=1000) # run
+net.train(data=data, steps=-1, dropout=.6, display_step=10, test_step=1000, resume=1) # run
 # net.predict() # nil=random
 # net.generate(3)  # nil=random
 
