@@ -394,7 +394,7 @@ class net:
 				return next(self.data.train)
 
 
-	def train(self,data=0,steps=-1,dropout=None,display_step=10,test_step=200,batch_size=10,do_resume=False): #epochs=-1,
+	def train(self, data=0, steps=-1, dropout=None, display_step=10, test_step=200, batch_size=10, resume=False): #epochs=-1,
 		print("learning_rate: %f"%self.learning_rate)
 		if data: self.data=data
 		steps = 9999999 if steps<=0 else steps
@@ -414,7 +414,7 @@ class net:
 		except:saver = tf.train.Saver(tf.all_variables())
 		snapshot = self.name + str(get_last_tensorboard_run_nr())
 		checkpoint = tf.train.latest_checkpoint(checkpoint_dir)
-		if do_resume and checkpoint:
+		if resume and checkpoint:
 			print("LOADING " + checkpoint+" !!!")
 			saver.restore(session, checkpoint)
 		try: session.run([tf.global_variables_initializer()])
