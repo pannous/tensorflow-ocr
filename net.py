@@ -499,16 +499,17 @@ class net:
 		self.input = self.x = tf.get_collection('inputs')[0]
 		self.target = self.y = tf.get_collection('targets')[0]
 		self.output= self.last_layer = tf.get_collection('outputs')[0]
-		# self.learning_rate, self.cost, self.optimize, self.accuracy = tf.get_collection('train_ops')
+		self.dropout_keep_prob = self.session.graph.get_tensor_by_name("state/dropout_keep_prob:0")  # :0 WTF!?!?!
+		self.train_phase = self.session.graph.get_tensor_by_name(name='state/train_phase:0')
 		return self
 
 	def predict(self,eval_data=None,model=None):
-		if not eval_data:
+		if eval_data is None:
 			eval_data=np.random.random(self.input_shape)
-		feed_dict = {self.x:[eval_data]}
+		feed_dict = {self.x:[eval_data],self.dropout_keep_prob:1.0, self.train_phase:False}
 		result= self.session.run([self.output], feed_dict)
 		best=np.argmax(result)
-		print("prediction: %s" % result)
+		# print("prediction: %s" % result)
 		print("predicted: %s" % best)
 
 
