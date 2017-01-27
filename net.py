@@ -349,8 +349,9 @@ class net:
 				prediction = y = tf.nn.log_softmax(self.last_layer)
 				self.cost = cross_entropy = -tf.reduce_sum(y_ * y)
 			else:
-				y = prediction = self.last_layer
+				self.output = y = prediction = self.last_layer
 				self.cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(y, y_)) # prediction, target
+			tf.add_to_collection('outputs', self.output)
 
 			# if not gpu:
 			with tf.device(_cpu):tf.summary.scalar('cost', self.cost)
@@ -480,29 +481,32 @@ class net:
 			exit(0)
 
 	def restore(self, model,session=None):#name
+		print("Restoring old model from meta graph")
 		if not session: session= tf.Session()
 		loader = tf.train.import_meta_graph(checkpoint_dir+"/"+model + '.ckpt-0.meta')
 		# tf.train.write_graph; tf.import_graph_def Deprecated!
 		loader.restore(session, tf.train.latest_checkpoint(checkpoint_dir))
 		self.input = self.x = tf.get_collection('inputs')[0]
 		self.target = self.y = tf.get_collection('targets')[0]
+		self.output= self.last_layer = tf.get_collection('outputs')[0]
 		self.learning_rate, self.cost, self.optimize, self.accuracy = tf.get_collection('train_ops')
 
 
 	def predict(self,eval_data=None,model=None):
 		if model:
+			print("Restoring old model from meta graph")
 			sess = tf.Session()
 			# checkpoint = tf.train.get_checkpoint_state(checkpoint_dir)
 			# if checkpoint and checkpoint.model_checkpoint_path:
 			# loader.restore(sess,checkpoint)
 			loader = tf.train.import_meta_graph(model + '.ckpt-0.meta')
 			loader.restore(sess, tf.train.latest_checkpoint(checkpoint_dir))
-			self.target = self.y = tf.get_collection('targets')[0]
+			self.output = tf.get_collection('outputs')[0]
 		if not eval_data:
 			eval_data=np.random.random(self.input_shape)
 		feed_dict = {self.x:[eval_data]}
-		out= self.session.run([self.target], feed_dict)
-		best=np.argmax(out)
-		print("prediction: %s" % out)
+		result= self.session.run([self.output], feed_dict)
+		best=np.argmax(result)
+		print("prediction: %s" % result)
 		print("predicted: %s" % best)
 
