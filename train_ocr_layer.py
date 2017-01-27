@@ -32,7 +32,7 @@ def denseConv(net):
 
 """ Baseline tests to see that your model doesn't have any bugs and can learn small test sites without efforts """
 
-net = layer.net(layer.baseline, input_width=size, output_width=nClasses, learning_rate=learning_rate)
+# net = layer.net(layer.baseline, input_width=size, output_width=nClasses, learning_rate=learning_rate)
 # learning_rate: 0.003: full overfit at Step 800
 # learning_rate: 0.0003: full overfit at Step 2400
 
@@ -46,29 +46,19 @@ net = layer.net(layer.baseline, input_width=size, output_width=nClasses, learnin
 # net = layer.net(layer.baselineDenseConv, input_width=size, output_width=nClasses, learning_rate=learning_rate)
 # learning_rate: 0.003: overfit 98% at Step 3000 ++
 
-net.train(data=data, steps=training_steps, dropout=0, display_step=100, test_step=1000)  # run
-
 # alex = broken baseline! lol, how?
 # net = layer.net(layer.alex, input_width=size, output_width=nClasses, learning_rate=.001)
-# net.train(data=data, steps=training_steps, dropout=0.5, display_step=10, test_step=100)  # Alex likes special
+
+# net.train(data=data, test_step=1000)  # run
+
+""" here comes the real network """
 
 # net=layer.net(alex,input_width=28, output_width=nClasses, learning_rate=learning_rate) # NOPE!?
-# net=layer.net(denseConv, input_width=28, output_width=nClasses,learning_rate=learning_rate)
+net = layer.net(denseConv, input_width=size, output_width=nClasses, learning_rate=learning_rate)
 
-
-# net = layer.net(denseConv, input_width=size, output_width=nClasses, learning_rate=learning_rate)
 # net.train(data=data,steps=50000,dropout=0.6,display_step=1,test_step=1) # debug
 # net.train(data=data, steps=training_steps,dropout=0.6,display_step=5,test_step=20) # test
-# net.train(data=data, steps=-1, dropout=.6, display_step=10, test_step=1000) # run
+net.train(data=data, dropout=.6, display_step=10, test_step=1000) # run
+
 # net.predict() # nil=random
 # net.generate(3)  # nil=random
-
-# refeed projection results as input via partial_run
-# a = array_ops.placeholder(dtypes.float32, shape=[])
-# b = array_ops.placeholder(dtypes.float32, shape=[])
-# c = array_ops.placeholder(dtypes.float32, shape=[])
-# r1 = math_ops.add(a, b)
-# r2 = math_ops.mul(r1, c)
-# h = sess.partial_run_setup([r1, r2], [a, b, c])
-# res = sess.partial_run(h, r1, feed_dict={a: 1, b: 2})
-# res = sess.partial_run(h, r2, feed_dict={c: res})
