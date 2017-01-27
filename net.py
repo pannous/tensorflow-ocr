@@ -65,16 +65,16 @@ class net:
 			# self.batch_size=batch_size
 			self.layers=[]
 			self.learning_rate=learning_rate
-			if not name: name=model.__name__
-			self.name=str(name)
+			if isinstance(model,str):
+				self.name =model
+				self.restore()
+				return
+			self.name = model.__name__
 			if input_width == 0:
 				raise Exception("Please set input_width or input_shape")
 			if output_width==0:
 				raise Exception("Please set number of classes via output_width")
-			if name and os.path.exists(self.name+".model"):
-				self.load_model(self.name+".model")
-			else:
-				self.generate_model(model)
+			self.generate_model(model)
 
 	def get_data_shape(self):
 		if self.input_shape:
@@ -415,22 +415,10 @@ class net:
 		x=self.x
 		y=self.y
 		keep_prob=self.keep_prob
-		try:saver = tf.train.Saver(tf.global_variables())
-		except:saver = tf.train.Saver(tf.all_variables())
+		if not resume or not self.resume(session):
+				session.run([tf.global_variables_initializer()])
+		saver = tf.train.Saver(tf.global_variables())
 		snapshot = self.name + str(get_last_tensorboard_run_nr())
-		checkpoint = tf.train.latest_checkpoint(checkpoint_dir)
-		try: session.run([tf.global_variables_initializer()])
-		except:  session.run([tf.initialize_all_variables()])
-		if self.name and checkpoint and not self.name in checkpoint:
-			print("IGNORING checkpoint of other run : " + checkpoint + " !!!")
-			checkpoint = None
-		if resume and checkpoint:
-			print("LOADING " + checkpoint+" !!!")
-			try: saver.restore(session, checkpoint)
-			except Exception as ex:
-				print("CANNOT LOAD " + checkpoint + " !!!")
-				print(ex)
-
 		step = 0 # show first
 		while step < steps:
 			batch_xs, batch_ys = self.next_batch(batch_size,session)
@@ -480,28 +468,38 @@ class net:
 			print("OVERFIT OK. Early stopping")
 			exit(0)
 
-	def restore(self, model,session=None):#name
+	def resume(self, session):
+		checkpoint = tf.train.latest_checkpoint(checkpoint_dir)
+		if self.name and checkpoint and not self.name in checkpoint:
+			print("IGNORING checkpoint of other run : " + checkpoint + " !!!")
+			checkpoint = None
+		if checkpoint:
+			print("LOADING " + checkpoint + " !!!")
+			try:
+				persister = tf.train.Saver(tf.global_variables())
+				return persister.restore(session, checkpoint)
+			except Exception as ex:
+				print("CANNOT LOAD " + checkpoint + " !!!")
+				print(ex)
+		return False
+
+	def restore(self):#name
 		print("Restoring old model from meta graph")
-		if not session: session= tf.Session()
-		loader = tf.train.import_meta_graph(checkpoint_dir+"/"+model + '.ckpt-0.meta')
-		# tf.train.write_graph; tf.import_graph_def Deprecated!
-		loader.restore(session, tf.train.latest_checkpoint(checkpoint_dir))
+		# if not session: session= tf.Session()
+		self.session = tf.Session()
+		checkpoint = tf.train.get_checkpoint_state(checkpoint_dir)
+		# if checkpoint and checkpoint.model_checkpoint_path:
+		loader = tf.train.import_meta_graph(checkpoint.model_checkpoint_path + ".meta")
+		self.session.run(tf.global_variables_initializer())
+		loader.restore(self.session, tf.train.latest_checkpoint(checkpoint_dir))
+		# loader.restore(self.session , checkpoint) #Unable to get element from the feed as bytes!  HUH??
 		self.input = self.x = tf.get_collection('inputs')[0]
 		self.target = self.y = tf.get_collection('targets')[0]
 		self.output= self.last_layer = tf.get_collection('outputs')[0]
-		self.learning_rate, self.cost, self.optimize, self.accuracy = tf.get_collection('train_ops')
-
+		# self.learning_rate, self.cost, self.optimize, self.accuracy = tf.get_collection('train_ops')
+		return self
 
 	def predict(self,eval_data=None,model=None):
-		if model:
-			print("Restoring old model from meta graph")
-			sess = tf.Session()
-			# checkpoint = tf.train.get_checkpoint_state(checkpoint_dir)
-			# if checkpoint and checkpoint.model_checkpoint_path:
-			# loader.restore(sess,checkpoint)
-			loader = tf.train.import_meta_graph(model + '.ckpt-0.meta')
-			loader.restore(sess, tf.train.latest_checkpoint(checkpoint_dir))
-			self.output = tf.get_collection('outputs')[0]
 		if not eval_data:
 			eval_data=np.random.random(self.input_shape)
 		feed_dict = {self.x:[eval_data]}
@@ -509,4 +507,5 @@ class net:
 		best=np.argmax(result)
 		print("prediction: %s" % result)
 		print("predicted: %s" % best)
+
 
