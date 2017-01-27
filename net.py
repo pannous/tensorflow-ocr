@@ -396,7 +396,7 @@ class net:
 				return next(self.data.train)
 
 
-	def train(self, data=0, steps=-1, dropout=None, display_step=10, test_step=200, batch_size=10, resume=True): #epochs=-1,
+	def train(self, data=0, steps=-1, dropout=None, display_step=10, test_step=100, batch_size=10, resume=True): #epochs=-1,
 		print("learning_rate: %f"%self.learning_rate)
 		if data: self.data=data
 		steps = 9999999 if steps<=0 else steps
@@ -418,9 +418,16 @@ class net:
 		checkpoint = tf.train.latest_checkpoint(checkpoint_dir)
 		try: session.run([tf.global_variables_initializer()])
 		except:  session.run([tf.initialize_all_variables()])
+		if not self.name in checkpoint:
+			print("IGNORING checkpoint of other run : " + checkpoint + " !!!")
+			checkpoint = None
 		if resume and checkpoint:
 			print("LOADING " + checkpoint+" !!!")
-			saver.restore(session, checkpoint)
+			try: saver.restore(session, checkpoint)
+			except Exception as ex:
+				print("CANNOT LOAD " + checkpoint + " !!!")
+				print(ex)
+
 		step = 0 # show first
 		while step < steps:
 			batch_xs, batch_ys = self.next_batch(batch_size,session)
