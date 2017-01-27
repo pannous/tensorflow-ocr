@@ -478,10 +478,12 @@ class net:
 			print("LOADING " + checkpoint + " !!!")
 			try:
 				persister = tf.train.Saver(tf.global_variables())
-				return persister.restore(session, checkpoint)
+				persister.restore(session, checkpoint)
+				print("resume checkpoint successful!")
+				return True
 			except Exception as ex:
-				print("CANNOT LOAD " + checkpoint + " !!!")
 				print(ex)
+		print("CANNOT LOAD " + checkpoint + " !!!")
 		return False
 
 	def restore(self):#name
