@@ -5,7 +5,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.contrib.tensorboard.plugins import projector # for 3d PCA/ t-SNE
 from .tensorboard_util import *
-# slim = tf.contrib.slim
+
 print("tf.__version__:%s"% tf.__version__)
 
 start = int(time.time())
@@ -14,17 +14,18 @@ start = int(time.time())
 set_tensorboard_run(auto_increment=True)
 run_tensorboard(restart=False)
 
-# gpu = True
-gpu = False
+gpu = True
+# gpu = False
 debug = False # summary.histogram  : 'module' object has no attribute 'histogram' WTF
 debug = True  # histogram_summary ...
+
 visualize_cluster = False # NOT YET: 'ProjectorConfig' object has no attribute 'embeddings'
 
 weight_divider=10.
 default_learning_rate=0.001 #  mostly overwritten, so ignore it
 decay_steps = 100000
 decay_size = 0.1
-save_step=10000 #  if you don't want to save snapshots, set to -1
+save_step = 10000  # if you don't want to save snapshots, set to -1
 checkpoint_dir="checkpoints"
 _cpu = '/cpu:0'
 _gpu = '/GPU:0'
@@ -361,7 +362,8 @@ class net:
 			# Evaluate model
 			correct_pred = tf.equal(tf.argmax(prediction, 1), tf.argmax(self.target, 1))
 			self.accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
-			if not gpu: tf.summary.scalar('accuracy', self.accuracy)
+			# if not gpu:
+			tf.summary.scalar('accuracy', self.accuracy)
 			# Launch the graph
 
 	# noinspection PyAttributeOutsideInit
@@ -394,7 +396,7 @@ class net:
 				return next(self.data.train)
 
 
-	def train(self, data=0, steps=-1, dropout=None, display_step=10, test_step=200, batch_size=10, resume=False): #epochs=-1,
+	def train(self, data=0, steps=-1, dropout=None, display_step=10, test_step=200, batch_size=10, resume=True): #epochs=-1,
 		print("learning_rate: %f"%self.learning_rate)
 		if data: self.data=data
 		steps = 9999999 if steps<=0 else steps
@@ -414,11 +416,11 @@ class net:
 		except:saver = tf.train.Saver(tf.all_variables())
 		snapshot = self.name + str(get_last_tensorboard_run_nr())
 		checkpoint = tf.train.latest_checkpoint(checkpoint_dir)
+		try: session.run([tf.global_variables_initializer()])
+		except:  session.run([tf.initialize_all_variables()])
 		if resume and checkpoint:
 			print("LOADING " + checkpoint+" !!!")
 			saver.restore(session, checkpoint)
-		try: session.run([tf.global_variables_initializer()])
-		except:  session.run([tf.initialize_all_variables()])
 		step = 0 # show first
 		while step < steps:
 			batch_xs, batch_ys = self.next_batch(batch_size,session)
@@ -439,7 +441,7 @@ class net:
 			if step % test_step == 0: self.test(step)
 			if step % save_step == 0 and step>0:
 				print("SAVING snapshot %s"%snapshot)
-				saver.save(session, checkpoint_dir+snapshot + ".ckpt", self.global_step)
+				saver.save(session, checkpoint_dir+"/"+snapshot + ".ckpt", self.global_step)
 
 			step += 1
 		print("\nOptimization Finished!")
