@@ -25,7 +25,8 @@ weight_divider=10.
 default_learning_rate=0.001 #  mostly overwritten, so ignore it
 decay_steps = 100000
 decay_size = 0.1
-save_step = 10000  # if you don't want to save snapshots, set to -1
+save_step = 10000  # if you don't want to save snapshots, set to 0
+
 checkpoint_dir="checkpoints"
 _cpu = '/cpu:0'
 _gpu = '/GPU:0'
@@ -399,7 +400,7 @@ class net:
 				return next(self.data.train)
 
 
-	def train(self, data=0, steps=-1, dropout=None, display_step=10, test_step=100, batch_size=10, resume=True): #epochs=-1,
+	def train(self, data=0, steps=-1, dropout=None, display_step=10, test_step=100, batch_size=10, resume=save_step): #epochs=-1,
 		print("learning_rate: %f"%self.learning_rate)
 		if data: self.data=data
 		steps = 9999999 if steps<0 else steps
