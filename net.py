@@ -479,3 +479,11 @@ class net:
 
 	# def inputs(self,data):
 	# 	self.inputs, self.labels = load_data()#...)
+
+	def predict(self,eval_data=None):
+		if not eval_data:
+			eval_data=np.random.random(self.input_shape)
+		feed_dict = {self.x:[eval_data]}
+		out= self.session.run([self.last_layer], feed_dict)
+		print("predicted: %s"%out)
+
