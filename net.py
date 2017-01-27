@@ -99,11 +99,13 @@ class net:
 				self.x = x = self.input = tf.placeholder(tf.float32, shape_, name="input_x")
 				self.last_shape = x
 			elif self.input_width:
-				self.x = x = self.target = tf.placeholder(tf.float32, [None, self.input_width], name = "input_x")
+				self.x = x = self.input = tf.placeholder(tf.float32, [None, self.input_width], name = "input_x")
 			else:
 				raise Exception("need input_shape or input_width by now")
 			self.last_layer=self.x
+			tf.add_to_collection('inputs', self.x)
 			self.y = y = self.target = tf.placeholder(tf.float32, [None, self.output_width],name="target_y")
+			tf.add_to_collection('targets',self.target )
 		with tf.name_scope('model'):
 			model(self)
 		if(self.last_width!=self.output_width):
@@ -376,7 +378,7 @@ class net:
 			self.cost = tf.reduce_mean(tf.pow(self.y - self.last_layer, 2))
 			self.optimize = tf.train.AdamOptimizer(self.learning_rate).minimize(self.cost)
 			self.accuracy=tf.maximum(0., 1- tf.sqrt(self.cost))
-
+			tf.add_to_collection('train_ops',[ self.learning_rate,self.cost,self.optimize,self.accuracy])
 
 	def debug_print(self, throughput, to_print=[]):
 		return tf.cond(self.train_phase, lambda: throughput, lambda: tf.Print(throughput, to_print + [nop()], "OK!"))
@@ -477,11 +479,29 @@ class net:
 			print("OVERFIT OK. Early stopping")
 			exit(0)
 
-	def predict(self,eval_data=None):
+	def restore(self, model,session=None):#name
+		if not session: session= tf.Session()
+		loader = tf.train.import_meta_graph(checkpoint_dir+"/"+model + '.ckpt-0.meta')
+		# tf.train.write_graph; tf.import_graph_def Deprecated!
+		loader.restore(session, tf.train.latest_checkpoint(checkpoint_dir))
+		self.input = self.x = tf.get_collection('inputs')[0]
+		self.target = self.y = tf.get_collection('targets')[0]
+		self.learning_rate, self.cost, self.optimize, self.accuracy = tf.get_collection('train_ops')
+
+
+	def predict(self,eval_data=None,model=None):
+		if model:
+			sess = tf.Session()
+			# checkpoint = tf.train.get_checkpoint_state(checkpoint_dir)
+			# if checkpoint and checkpoint.model_checkpoint_path:
+			# loader.restore(sess,checkpoint)
+			loader = tf.train.import_meta_graph(model + '.ckpt-0.meta')
+			loader.restore(sess, tf.train.latest_checkpoint(checkpoint_dir))
+			self.target = self.y = tf.get_collection('targets')[0]
 		if not eval_data:
 			eval_data=np.random.random(self.input_shape)
 		feed_dict = {self.x:[eval_data]}
-		out= self.session.run([self.last_layer], feed_dict)
+		out= self.session.run([self.target], feed_dict)
 		best=np.argmax(out)
 		print("prediction: %s" % out)
 		print("predicted: %s" % best)
