@@ -399,7 +399,7 @@ class net:
 	def train(self, data=0, steps=-1, dropout=None, display_step=10, test_step=100, batch_size=10, resume=True): #epochs=-1,
 		print("learning_rate: %f"%self.learning_rate)
 		if data: self.data=data
-		steps = 9999999 if steps<=0 else steps
+		steps = 9999999 if steps<0 else steps
 		session=self.session
 		# with tf.device(_cpu):
 		# t = tf.verify_tensor_all_finite(t, msg)
@@ -418,7 +418,7 @@ class net:
 		checkpoint = tf.train.latest_checkpoint(checkpoint_dir)
 		try: session.run([tf.global_variables_initializer()])
 		except:  session.run([tf.initialize_all_variables()])
-		if not self.name in checkpoint:
+		if self.name and checkpoint and not self.name in checkpoint:
 			print("IGNORING checkpoint of other run : " + checkpoint + " !!!")
 			checkpoint = None
 		if resume and checkpoint:
@@ -477,13 +477,12 @@ class net:
 			print("OVERFIT OK. Early stopping")
 			exit(0)
 
-	# def inputs(self,data):
-	# 	self.inputs, self.labels = load_data()#...)
-
 	def predict(self,eval_data=None):
 		if not eval_data:
 			eval_data=np.random.random(self.input_shape)
 		feed_dict = {self.x:[eval_data]}
 		out= self.session.run([self.last_layer], feed_dict)
-		print("predicted: %s"%out)
+		best=np.argmax(out)
+		print("prediction: %s" % out)
+		print("predicted: %s" % best)
 
