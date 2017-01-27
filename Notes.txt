@@ -1,3 +1,7 @@
+https://github.com/tensorflow/tensorflow/releases/tag/v1.0.0-rc0
+
+tf.complex_abs has been removed from the Python interface. tf.abs supports complex tensors and should be used instead.
+
 Interesting overfit behavior:
 Step 0 Loss= 0.000000 Accuracy= 0.000 Time= 13s 			Test Accuracy:  0.0
 Step 9400 Loss= 0.000000 Accuracy= 0.800 Time= 203s 			Test Accuracy:  0.484375
