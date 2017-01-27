@@ -17,8 +17,11 @@ plt.matshow([[1, 0], [0, 1]], fignum=1)
 plt.draw()
 system('''/usr/bin/osascript -e 'tell app "Finder" to set frontmost of process "Python" to true' ''')
 
-net=layer.net(model="denseConv", input_shape=[784])
+# LOAD MODEL!
+net = layer.net(model="denseConv", input_shape=[28,28])
+# net = layer.net(model="denseConv", input_shape=[784])
 net.predict()#random : debug
+
 i = 0
 width = 256
 height = 256
@@ -38,11 +41,11 @@ if __name__ == "__main__":
 		image = ImageGrab.grab([x-60, y-20, x+40 ,y+20])
 		# image = ImageGrab.grab([x, y, x + 30, y + 30])
 		# help(image.show) Displays this image via preview. This method is mainly intended for debugging purposes
-		array = numpy.array(image.getdata())
-		# mat= array.reshape(image.height, image.width,4)[:,:,0]
+		array = numpy.array(image.getdata()) # (1, 4000, 4)
+		mat= array.reshape(image.height, image.width,4)[:28,:28,0]
 		# plt.matshow(mat, fignum=1)
 		plt.imshow(image)
 		plt.draw()
-		net.predict(array)
+		net.predict(mat)
 		plt.pause(0.01)
 
