@@ -483,6 +483,6 @@ class net:
 		feed_dict = {self.x:[eval_data]}
 		out= self.session.run([self.last_layer], feed_dict)
 		best=np.argmax(out)
-		print("prediction: %s" % out)
 		print("predicted: %s" % best)
+		print("prediction: %s" % out)
 
