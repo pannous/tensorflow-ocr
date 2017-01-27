@@ -5,15 +5,20 @@ import numpy
 import pyscreenshot as ImageGrab
 
 from os import system
+
+import layer
+
 app = Tkinter.Tk()
 import matplotlib.pyplot as plt
 plt.matshow([[1, 0], [0, 1]], fignum=1)
-print(dir(plt))
+# print(dir(plt))
 # help(plt)
 # ax.patch.set_facecolor('None') or ax.patch.set_visible(False).
 plt.draw()
 system('''/usr/bin/osascript -e 'tell app "Finder" to set frontmost of process "Python" to true' ''')
 
+net=layer.net(model="denseConv", input_shape=[784])
+net.predict()#random : debug
 i = 0
 width = 256
 height = 256
@@ -25,18 +30,6 @@ def get_mouse_position():
 	else:
 			x, y = app.winfo_pointerxy()
 	return x,y
-
-['_Image__transformer', '_PngImageFile__idat', '__array_interface__', '__class__', '__copy__', '__delattr__',
- '__dict__', '__doc__', '__enter__', '__eq__', '__exit__', '__format__', '__getattribute__', '__getstate__', '__hash__',
- '__init__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__',
- '__setstate__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', '_copy', '_dump', '_expand', '_makeself',
- '_new', '_open', '_repr_png_', 'category', 'close', 'convert', 'copy', 'crop', 'decoderconfig', 'decodermaxblock',
- 'draft', 'effect_spread', 'filename', 'filter', 'format', 'format_description', 'fp', 'frombytes', 'fromstring',
- 'getbands', 'getbbox', 'getcolors', 'getdata', 'getextrema', 'getim', 'getpalette', 'getpixel', 'getprojection',
- 'height', 'histogram', 'im', 'info', 'load', 'load_end', 'load_prepare', 'load_read', 'mode', 'offset', 'palette',
- 'paste', 'png', 'point', 'putalpha', 'putdata', 'putpalette', 'putpixel', 'pyaccess', 'quantize', 'readonly', 'resize',
- 'rotate', 'save', 'seek', 'show', 'size', 'split', 'tell', 'text', 'thumbnail', 'tile', 'tobitmap', 'tobytes',
- 'toqimage', 'toqpixmap', 'tostring', 'transform', 'transpose', 'verify', 'width']
 
 if __name__ == "__main__":
 	while 1:
@@ -50,5 +43,6 @@ if __name__ == "__main__":
 		# plt.matshow(mat, fignum=1)
 		plt.imshow(image)
 		plt.draw()
+		net.predict(array)
 		plt.pause(0.01)
 
