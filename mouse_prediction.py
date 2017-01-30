@@ -38,7 +38,8 @@ if __name__ == "__main__":
 	while 1:
 		x,y = get_mouse_position()
 		# im = ImageGrab.grab() fullscreen
-		image = ImageGrab.grab([x-60, y-20, x+40 ,y+20])
+		# image = ImageGrab.grab([x - 60, y - 20, x + 40, y + 20])
+		image = ImageGrab.grab([x - 14, y - 14, x + 14, y + 14])
 		# image = ImageGrab.grab([x, y, x + 30, y + 30])
 		# help(image.show) Displays this image via preview. This method is mainly intended for debugging purposes
 		array = numpy.array(image.getdata()) # (1, 4000, 4)
@@ -46,6 +47,10 @@ if __name__ == "__main__":
 		# plt.matshow(mat, fignum=1)
 		plt.imshow(image)
 		plt.draw()
-		net.predict(mat)
-		plt.pause(0.01)
+		try:
+			best=net.predict(mat)
+			plt.title("predicted: "+chr(best))
+		except Exception as ex:
+			print("%s"%ex)
+		# plt.pause(0.01)
 
