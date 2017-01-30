@@ -471,9 +471,12 @@ class net:
 
 	def resume(self, session):
 		checkpoint = tf.train.latest_checkpoint(checkpoint_dir)
-		if self.name and checkpoint and not self.name in checkpoint:
-			print("IGNORING checkpoint of other run : " + checkpoint + " !!!")
-			checkpoint = None
+		if checkpoint:
+			if self.name and not self.name in checkpoint:
+				print("IGNORING checkpoint of other run : " + checkpoint + " !!!")
+				checkpoint = None
+		else:
+			print ("NO checkpoint, nothing to resume")
 		if checkpoint:
 			print("LOADING " + checkpoint + " !!!")
 			try:
@@ -483,16 +486,19 @@ class net:
 				return True
 			except Exception as ex:
 				print(ex)
-		print("CANNOT LOAD " + checkpoint + " !!!")
+				print("CANNOT LOAD " + checkpoint + " !!!")
 		return False
 
 	def restore(self):#name
-		print("Restoring old model from meta graph")
 		# if not session: session= tf.Session()
 		self.session = tf.Session()
 		checkpoint = tf.train.get_checkpoint_state(checkpoint_dir)
-		# if checkpoint and checkpoint.model_checkpoint_path:
-		loader = tf.train.import_meta_graph(checkpoint.model_checkpoint_path + ".meta")
+		if checkpoint and checkpoint.model_checkpoint_path:
+			print("Restoring old model from meta graph")
+			loader = tf.train.import_meta_graph(checkpoint.model_checkpoint_path + ".meta")
+		else:
+			print("No model from meta graph, nothing to restore")
+			return self
 		self.session.run(tf.global_variables_initializer())
 		loader.restore(self.session, tf.train.latest_checkpoint(checkpoint_dir))
 		# loader.restore(self.session , checkpoint) #Unable to get element from the feed as bytes!  HUH??
@@ -511,5 +517,6 @@ class net:
 		best=np.argmax(result)
 		# print("prediction: %s" % result)
 		print("predicted: %s" % best)
+		return best
 
 
