@@ -7,18 +7,20 @@ import numpy as np
 from sys import platform
 from extensions import *
 
-overfit = False
-# overfit = True
+# overfit = False
+overfit = True
 if overfit:
-	min_size = 10  # 8#12
-	max_size = 10  # 48
+	# min_size = 10  # 8#12
+	# max_size = 10  # 48
+	min_size = 24
+	max_size = 24
 	max_padding = 1
 	extra_y = 0  # 10 # for oversized letters g,...
 	min_char = 32
 	max_angle = 0
 else:
-	min_size=8#8#12
-	max_size=28 #48
+	min_size = 8  # 8#12
+	max_size = 28  # 48
 	max_padding=2
 	extra_y = 0 # 10 # for oversized letters g,...
 	min_char=32
@@ -61,11 +63,14 @@ else:
 
 fonts_dir="/data/fonts/"
 fontnames=readlines("fonts.list")
-# fonts=['Arial.ttf']
 # check_fonts()
 check_fonts()
 if overfit:
 	fontnames=fontnames[0:1] # ONLY 2 to overfit
+
+if overfit:
+	fontnames=['Menlo.ttc']#Arial.ttf']
+
 
 styles=['regular','light','medium','bold','italic']
 # Regular Medium Heavy Demi 'none','normal', Subsetted Sans #,'underline','strikethrough']
@@ -90,6 +95,8 @@ nClasses={
 	Target.angle: 1,  # max_angle # regression
 	Target.position: 2,  # x,y # regression
 	Target.color: 3,  # RGB # regression
+	# Target.invert: 1,  # -1 0 1
+	# Target.mean: 1,  # -1 0 1
 }
 
 # test_word=9 # use 5 even for speaker etc
@@ -112,7 +119,14 @@ class batch():
 
 	def next_batch(self,batch_size=None):
 		letters=[letter() for i in range(batch_size or self.batch_size)]
-		xs=map(lambda l:l.matrix()/255., letters)
+		def norm(letter):
+			matrix=letter.matrix()
+			if letter.invert == -1:
+				matrix = 1 - 2 * matrix / 255.
+			elif letter.invert:
+				matrix = 1 - matrix / 255.
+			return matrix
+		xs=map(norm, letters) # 1...-1 range
 		if self.target==Target.letter: ys=[one_hot(l.ord,nLetters,min_char) for l in letters]
 		if self.target == Target.size: ys = [l.size for l in letters]
 		if self.target == Target.position: ys = [pos_to_arr(l.pos) for l in letters]
@@ -149,8 +163,9 @@ class letter():
 		self.angle= args['angle'] if 'angle' in args else 0#pick(range(-max_angle,max_angle))
 		self.color= args['color'] if 'color' in args else 'black'#'white'#self.random_color() #  #None #pick(range(-90, 180))
 		self.style= args['style'] if 'style' in args else self.get_style(self.font)# pick(styles)
+		self.invert=args['invert'] if 'invert' in args else pick([-1,0,1])
 
-		# self.padding = self.pos
+	# self.padding = self.pos
 
 	def projection(self):
 		return self.matrix(),self.ord
@@ -188,11 +203,12 @@ class letter():
 	# Mono
 		return 'regular'
 
-	def matrix(self):
-		try:
-			return np.array(self.image())
-		except:
-			return np.array(max_size*(max_size+extra_y))
+	def matrix(self):# ,normed=true!
+		# try:
+		array = np.array(self.image())
+		return array
+		# except:
+		# 	return np.array(max_size*(max_size+extra_y))
 
 	def image(self):
 		fontPath = self.font if '/' in self.font else fonts_dir+self.font
@@ -244,6 +260,9 @@ class letter():
 
 	# def print(self):
 	# 	print(self.__str__)
+	def save(self, path):
+		self.image().save(path)
+
 
 # @classmethod	# can access class cls
 # def ls(cls, mypath=None):
@@ -252,7 +271,8 @@ class letter():
 # def ls(mypath):
 
 if __name__ == "__main__":
-	l=letter()
+	l = letter()
+	# l.save("letters/letter_%s_%d.png"%(l.char,l.size))
 	m=l.matrix()
 	print(l)
 	l.show()
