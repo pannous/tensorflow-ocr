@@ -1,7 +1,8 @@
 fonts.list
-checkpoint
+checkpoints
 denseConv*
 clear-logs.sh
 ggraph
 update_and_train.sh
 checkpoint*
+checkpoints/denseConv10.ckpt-0.data-00000-of-00001
