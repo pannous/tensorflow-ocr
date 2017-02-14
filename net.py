@@ -486,7 +486,7 @@ class net:
 				return True
 			except Exception as ex:
 				print(ex)
-				print("CANNOT LOAD " + checkpoint + " !!!")
+				print("CANNOT LOAD checkpoint %s !!!"% checkpoint)
 		return False
 
 	def restore(self):#name
