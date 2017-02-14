@@ -7,21 +7,25 @@ import numpy as np
 from sys import platform
 from extensions import *
 
+shift_up = 9 # pull small letters up
+shift_left = 2 #
+
 overfit = False
 # overfit = True
 if overfit:
+	print("using OVERFIT DEBUG DATA!!!")
 	# min_size = 10  # 8#12
 	# max_size = 10  # 48
 	min_size = 24
 	max_size = 24
-	max_padding = 1
+	max_padding = 8
 	extra_y = 0  # 10 # for oversized letters g,...
 	min_char = 32
 	max_angle = 0
 else:
 	min_size = 8  # 8#12
 	max_size = 28  # 48
-	max_padding=2
+	max_padding=10
 	extra_y = 0 # 10 # for oversized letters g,...
 	min_char=32
 	max_angle=30#40
@@ -120,12 +124,7 @@ class batch():
 	def next_batch(self,batch_size=None):
 		letters=[letter() for i in range(batch_size or self.batch_size)]
 		def norm(letter):
-			matrix=letter.matrix()
-			if letter.invert == -1:
-				matrix = 1 - 2 * matrix / 255.
-			elif letter.invert:
-				matrix = 1 - matrix / 255.
-			return matrix
+			return letter.matrix()
 		xs=map(norm, letters) # 1...-1 range
 		if self.target==Target.letter: ys=[one_hot(l.ord,nLetters,min_char) for l in letters]
 		if self.target == Target.size: ys = [l.size for l in letters]
@@ -159,7 +158,7 @@ class letter():
 		self.char = args['char'] if 'char' in args else pick(letterz)
 		self.back = args['back'] if 'back' in args else None #self.random_color() # 'white' #None #pick(range(-90, 180))
 		self.ord	= args['ord'] if 'ord' in args else ord(self.char)
-		self.pos	= args['pos'] if 'pos' in args else {'x':pick(range(0,max_padding)),'y':pick(range(0,max_padding))}
+		self.pos	= args['pos'] if 'pos' in args else {'x':pick(range(0,max_padding)),'y':pick(range(0, max_padding))}
 		self.angle= args['angle'] if 'angle' in args else 0#pick(range(-max_angle,max_angle))
 		self.color= args['color'] if 'color' in args else 'black'#'white'#self.random_color() #  #None #pick(range(-90, 180))
 		self.style= args['style'] if 'style' in args else self.get_style(self.font)# pick(styles)
@@ -203,10 +202,14 @@ class letter():
 	# Mono
 		return 'regular'
 
-	def matrix(self):# ,normed=true!
-		# try:
-		array = np.array(self.image())
-		return array
+	def matrix(self, normed=true):
+		matrix = np.array(self.image())
+		if normed: matrix=matrix/ 255.
+		if self.invert == -1:
+			matrix = 1 - 2 * matrix # -1..1
+		elif self.invert:
+			matrix = 1 - matrix # 0..1
+		return matrix
 		# except:
 		# 	return np.array(max_size*(max_size+extra_y))
 
@@ -229,7 +232,8 @@ class letter():
 		else:
 			img = Image.new('L', size, 'white')	# # grey
 		draw = ImageDraw.Draw(img)
-		draw.text((padding['x'], padding['y']), text, font=ttf_font, fill=self.color)
+		# -
+		draw.text((padding['x']-shift_left, padding['y']-shift_up), text, font=ttf_font, fill=self.color)
 		if (self.angle>0 or self.angle<0) and self.size>20:
 			rot = img.rotate(self.angle, expand=1).resize(size)
 			if self.back:
@@ -269,12 +273,29 @@ class letter():
 
 # @staticmethod	# CAN'T access class
 # def ls(mypath):
+import matplotlib.pyplot as plt
+
+def show_matrix(mat):
+	plt.matshow(mat, fignum=1)
+	# plt.imshow(image)
+
+	# convolve(mat)
+	# predict(mat)
+
+	plt.draw()
+	plt.waitforbuttonpress()
+
 
 if __name__ == "__main__":
-	l = letter()
-	# l.save("letters/letter_%s_%d.png"%(l.char,l.size))
-	m=l.matrix()
-	print(l)
-	l.show()
+	while 1:
+		# l = letter(char='x')
+		l = letter()
+		# l.save("letters/letter_%s_%d.png"%(l.char,l.size))
+		mat=l.matrix()
+		print(np.max(mat))
+		print(np.min(mat))
+		print(np.average(mat))
+		print(l)
+		show_matrix(mat)
 
 

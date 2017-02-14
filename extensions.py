@@ -5,12 +5,250 @@ import io
 import math
 import sys
 import inspect
+import re  # for 'is_file'
+import os
+# import __builtin__
+import numpy as np
+from random import randint
+from random import random as _random
+import shutil
+
+# from extension_functions import * MERGED BACK!
 
 py2 = sys.version < '3'
 py3 = sys.version >= '3'
 
-pi=math.pi 
-E=math.e
+true = True
+false = False
+
+pi = math.pi
+E = math.e
+
+
+def Max(a, b):
+	if a > b:
+		return a
+	return b
+
+
+def Min(a, b):
+	if a > b:
+		return b
+	return a
+
+
+def rand(n=1): return _random() * n
+
+
+def random(n=1): return _random() * n
+
+
+def random_array(l): return np.random.rand(l)  # (0,1) x,y don't work ->
+
+
+def random_matrix(x, y): return np.random.rand(x, y)  # (0,1) !
+
+
+def pick(xs):
+	return xs[randint(len(xs))]
+
+
+def readlines(source):
+	print("open(source).readlines()")
+	return map(str.strip, open(source).readlines())
+
+
+def reverse(x):
+	y = x.reverse()
+	return y or x
+
+
+def h(x):
+	help(x)
+
+
+def log(msg):
+	print(msg)
+
+
+def fold(self, x, fun):
+	if not callable(fun):
+		fun, x = x, fun
+	return reduce(fun, self, x)
+
+
+def last(xs):
+	return xs[-1]
+
+
+def Pow(x, y):
+	return x**y
+
+
+def is_string(s):
+	return isinstance(s, str) or isinstance(s, xstr) or isinstance(s, unicode)
+
+
+# or issubclass(s,str) or issubclass(s,unicode)
+
+
+def flatten(l):
+	if isinstance(l, list) or isinstance(l, tuple):
+		for k in l:
+			if isinstance(k, list):
+				l.remove(k)
+				l.append(*k)
+	else:
+		return [l]
+	# verbose("NOT flattenable: %s"%s)
+	return l
+
+
+def square(x):
+	if isinstance(x, list): return map(square, x)
+	return x * x
+
+
+def puts(x):
+	print(x)
+	return x
+
+
+def increase(x):
+	import nodes
+	# if isinstance(x, dict)
+	if isinstance(x, nodes.Variable):
+		x.value = x.value + 1
+		return x.value
+	return x + 1
+
+
+def grep(xs, x):
+	# filter(lambda y: re.match(x,y),xs)
+	# return filter(pattern, xs)
+	if isinstance(x, list):
+		return filter(lambda y: x[0] in str(y), xs)
+	return filter(lambda y: x in str(y), xs)
+
+
+def ls(mypath="."):
+	from extensions import xlist
+	return xlist(os.listdir(mypath))
+
+
+def length(self):
+	return len(self)
+
+
+def say(x):
+	print(x)
+	os.system("say '%s'" % x)
+
+
+def bash(x):
+	os.system(x)
+
+
+def beep():
+	print("\aBEEP ")
+
+
+def beep(bug=True):
+	print("\aBEEP ")
+	import context
+	if not context.testing:
+		import os
+		os.system("say 'beep'")
+	return 'beeped'
+
+
+def match_path(p):
+	if not isinstance(p, str): return False
+	m = re.search(r'^(/[\w\'.]+)', p)
+	if not m: return []
+	return m
+
+
+def regex_match(a, b):
+	NONE = "None"
+	match = regex_matches(a, b)
+	if match:
+		try:
+			return a[match.start():match.end()].strip()
+		except:
+			return b[match.start():match.end()].strip()
+	return NONE
+
+
+# RegexType= _sre.SRE_Pattern#type(r'')
+MatchObjectType = type(re.search('', ''))
+def typeof(x):
+	print("type(x)")
+	return type(x)
+
+def regex_matches(a, b):
+	if isinstance(a, re._pattern_type):
+		return a.search(b)  #
+	if isinstance(b, re._pattern_type):
+		return b.search(a)
+	if is_string(a) and len(a) > 0:
+		if a[0] == "/": return re.compile(a).search(b)
+	if is_string(b) and len(b) > 0:
+		if b[0] == "/": return re.compile(b).search(a)
+
+	try:
+		b = re.compile(b)
+	except:
+		print("FAILED: re.compile(%s)" % b)
+		b = re.compile(str(b))
+	print(a)
+	print(b)
+	return b.search(str(a))  # vs
+
+
+# return b.match(a) # vs search
+# return a.__matches__(b) # other cases
+# return a.contains(b)
+
+
+def is_file(p, must_exist=True):
+	if not isinstance(p, str): return False
+	if re.search(r'^\d*\.\d+', p): return False
+	if re.match(r'^\d*\.\d+', str(p)): return False
+	m = re.search(r'^(\/[\w\'\.]+)', p)
+	m = m or re.search(r'^([\w\/\.]*\.\w+)', p)
+	if not m: return False
+	return must_exist and m and os.path.isfile(m.string) or m
+
+
+def is_dir(x, must_exist=True):
+	# (the.string+" ").match(r'^(\')?([^\/\\0]+(\')?)+ ')
+	m = match_path(x)
+	return must_exist and m and (py3 and os.path.isdir(m[0])) or (py2 and os.path.isdirectory(m[0]))
+
+
+# def print(x # debug!):
+# print x
+#   print "\n"
+#   x
+
+def is_a(self, clazz):
+	if self is clazz: return True
+	try:
+		ok = isinstance(self, clazz)
+		if ok: return True
+	except Exception as e:
+		print(e)
+
+	className = str(clazz).lower()
+	if className == str(self).lower(): return True  # KINDA
+
+	if self.is_(clazz): return True
+	return False
+
+
+# print("extension functions loaded")
+
 
 # from fractions import Fraction
 # x = Fraction(22, 7) 	# Ruby: 22 / 7r 22r / 7
@@ -19,32 +257,40 @@ if py3:
 	class file(io.IOBase):
 		pass  # WTF python3 !?!?!?!?!??
 
+
 	class xrange:  # WTF python3 !?!?!?!?!??
 		pass
 
+
 	class xstr(str):
-		pass #later
+		pass  # later
+
 
 	class unicode(xstr):  # , bytes):  # xchar[] TypeError: multiple bases have instance lay-out conflict
-# Python 3 renamed the unicode type to str, the old str type has been replaced by bytes.
+		# Python 3 renamed the unicode type to str, the old str type has been replaced by bytes.
 		pass
 
 	# else: https://stackoverflow.com/questions/22098099/reason-why-xrange-is-not-inheritable-in-python
 	#   class range(xrange):
 	#     pass
 
-else: # Python 2 needs:
+else:  # Python 2 needs:
 	class bytes(str):
 		pass
+
+
 	class char(str):
 		pass
+
+
 # char = char
 
 class byte(str):
 	pass
-	
+
+
 # byte= byte
-file=file # nice trick: native py2 class or local py3 class
+file = file  # nice trick: native py2 class or local py3 class
 unicode = unicode
 xrange = xrange
 
@@ -53,6 +299,7 @@ if py2:
 else:
 	import dill as pickle
 
+
 # try: # py2
 #   import sys
 #   reload(sys)
@@ -60,19 +307,17 @@ else:
 # except:
 #   pass
 
-import shutil
-
-from extension_functions import *
 
 def type_name(x):
 	return type(x).__name__
+
 
 def xx(y):
 	if type_name(y).startswith('x'):   return y
 	# if isinstance(y, xstr):   return y
 	# if isinstance(y, xlist):   return y
 	if isinstance(y, xrange): return xlist(y)
-	if isinstance(y, bool):  return y #xbool(y)
+	if isinstance(y, bool):  return y  # xbool(y)
 	if isinstance(y, list):  return xlist(y)
 	if isinstance(y, str):   return xstr(y)
 	if isinstance(y, unicode):   return xstr(y)
@@ -113,6 +358,8 @@ def extension(clazz):
 
 class Class:
 	pass
+
+
 # not def(self):
 #   False
 
@@ -242,7 +489,7 @@ class xdir(Directory):
 
 
 # class Number < Numeric
-# 
+#
 # def not None(self):
 #   return True
 #
@@ -307,22 +554,36 @@ class xlist(list):
 	def unique(xs):
 		return xlist(set(xs))
 
+	#
+	# def list(xs):
+	# 	for x in xs:
+	# 		print(x)
+	# 	return xs
+
 	def uniq(xs):
+		return xlist(set(xs))
+
+	def unique(xs):
 		return xlist(set(xs))
 
 	def add(self, x):
 		self.insert(len(self), x)
 
 	def method_missing(xs, name, *args, **kwargs):  # [2.1,4.8].int=[2,5]
+		if len(xs) == 0: return None
 		try:
 			method = getattr(xs.first(), name)
 		except:
 			# if str(name) in globals():
 			method = globals()[str(name)]  # .method(m)
+		if not callable(method):
+			properties = xlist(map(lambda x: getattr(x, name), xs))
+			return xlist(zip(xs, properties))
+		# return properties
 		return xlist(map(lambda x: method(args, kwargs), xs))  # method bound to x
 
-	def pick(self):
-		return self[randint(len(self))]
+	def pick(xs):
+		return xs[randint(len(xs))]
 
 	def __getattr__(self, name):
 		if str(name) in globals():
@@ -353,15 +614,15 @@ class xlist(list):
 			fun, x = x, fun
 		return self.reduce(fun, self, x)
 
-	def row(self, n):
-		return self[int(n) - 1]
+	def row(xs, n):
+		return xs[int(n) - 1]
 
-	def column(self, n):
-		if isinstance(self[0], str):
-			return xlist(map(lambda row: xstr(row).word(n + 1), self))
-		if isinstance(self[0], list):
-			return xlist(map(lambda row: row[n], self))
-		raise Exception("column of %s undefined" % type(self[0]))
+	def column(xs, n):
+		if isinstance(xs[0], str):
+			return xlist(map(lambda row: xstr(row).word(n + 1), xs))
+		if isinstance(xs[0], list):
+			return xlist(map(lambda row: row[n], xs))
+		raise Exception("column of %s undefined" % type(xs[0]))
 
 	# c=self[n]
 
@@ -826,14 +1087,13 @@ class xstr(str):
 		return xstr(str).reverse()
 
 
-
 class xchar(unicode):  # unicode: multiple bases have instance lay-out conflict
 	def __coerce__(self, other):
 		if isinstance(other, int):
 			other = chr(other)
 		# if isinstance(other,str):
 		#     other=chr(other)
-		return (type(other)(self), other)
+		return type(other)(self), other
 
 
 # class Fixnum Float
@@ -876,7 +1136,7 @@ class xint(int):
 		return self - x
 
 	def times(self, x):
-		if (callable(x)):
+		if callable(x):
 			return [x() for i in xrange(self)]
 		else:
 			return self * x
@@ -1017,7 +1277,6 @@ class xfloat(float):
 		if self.isa(clazz): return True
 		return False
 
-
 	def increase(self, by=1):
 		return self + by  # Can't change the value of numeric self!!
 
@@ -1151,10 +1410,13 @@ def read_binary(file):
 def dump(o, file="dump.bin"):
 	pickle.dump(o, open(file, 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
 	print("saved to '" + file + "'")
-save=dump
-write=dump # ok for plain bytes too++
 
-def write_direct(data,file):
+
+save = dump
+write = dump  # ok for plain bytes too++
+
+
+def write_direct(data, file):
 	open(file, 'wb').write(data)
 
 
@@ -1173,36 +1435,40 @@ def undump(file_name="dump.bin"):
 def restore(file_name="dump.bin"):
 	return pickle.load(open(file_name, 'rb'))
 
+
 def run(cmd):
 	os.system(cmd)
 
+
 def exists(file):
 	os.path.exists(file)
+
+
 # class Encoding:
 #     pass
 
 
-def find_in_module(module,match="",recursive=True): # all
-  if isinstance(module,str): 
-  	module=sys.modules[module]
-  for name, obj in inspect.getmembers(module):
-      # if inspect.isclass(obj):
-      if match in name:
-        print(obj)
-      if inspect.ismodule(obj) and recursive and obj!=module:
-      	if module.__name__ in obj.__name__:
-      		# print("SUBMODULE: %s"%obj)
-      		find_in_module(obj,match)
+def find_in_module(module, match="", recursive=True):  # all
+	if isinstance(module, str):
+		module = sys.modules[module]
+	for name, obj in inspect.getmembers(module):
+		# if inspect.isclass(obj):
+		if match in name:
+			print(obj)
+		if inspect.ismodule(obj) and recursive and obj != module:
+			if module.__name__ in obj.__name__:
+				# print("SUBMODULE: %s"%obj)
+				find_in_module(obj, match)
 
 
+def find_class(match=""):  # all
+	import sys, inspect
+	for module in sys.modules.keys():  # sys.modules[module] #by key
+		for name, obj in inspect.getmembers(sys.modules[module]):
+			if inspect.isclass(obj):
+				if match in str(obj):
+					print(obj)
 
-def find_class(match=""): # all
-  import sys, inspect
-  for module in sys.modules.keys(): # sys.modules[module] #by key
-    for name, obj in inspect.getmembers(sys.modules[module]):
-        if inspect.isclass(obj):
-          if match in str(obj):
-            print(obj)
 
 # @extension
 # class Math:

@@ -1,5 +1,6 @@
 import sys
 import Tkinter  # Tkinter could be supported by all systems
+app = Tkinter.Tk() #  must be declared before Mat
 
 import tensorflow as tf
 import numpy
@@ -11,7 +12,6 @@ from os import system
 
 import letter
 
-app = Tkinter.Tk()
 import matplotlib.pyplot as plt
 plt.matshow([[1, 0], [0, 1]], fignum=1)
 # print(dir(plt))
@@ -29,9 +29,11 @@ def get_mouse_position():
 			import win32api
 			x, y = win32api.GetCursorPos()
 	else:
-			x, y = app.winfo_pointerxy()
+		x, y = app.winfo_pointerxy()
 	return x,y
 
+
+get_mouse_position()
 session=tf.Session()
 
 
@@ -65,7 +67,7 @@ net.predict()#random : debug
 
 def predict(mat):
 	try:
-		best=net.predict(mat/255.)
+		best=net.predict(mat)
 		print(chr(best))
 		plt.title("predicted: "+chr(best))
 	except Exception as ex:
@@ -89,14 +91,18 @@ if __name__ == "__main__":
 		# help(image.show) Displays this image via preview. This method is mainly intended for debugging purposes
 		array = numpy.array(image.getdata()) # (1, 4000, 4)
 		mat = array.reshape(image.height, image.width, 4)[:, :, 0]
-		# mat = 1 - 2 * mat / 255.  # norm [-1,1] !
-		# mat = 1 - mat / 255.  # norm [0,1]!
-		# mat = mat / 255.  # norm [0,1]!
 		if size> image.height:
 			mat=numpy.pad(mat, (0,  size- image.height), 'constant', constant_values=255) # 1==white!
+
+		mat = 1 - 2 * mat / 255.  # norm [-1,1] !
+		# mat = 1 - mat / 255.  # norm [0,1]! black=1
+		# mat = mat / 255.  # norm [0,1]! black=0 (default)
+
 		plt.matshow(mat, fignum=1)
 		# plt.imshow(image)
-
+		print(np.max(mat))
+		print(np.min(mat))
+		print(np.average(mat))
 		# convolve(mat)
 		predict(mat)
 

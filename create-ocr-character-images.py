@@ -22,4 +22,4 @@ def demo():
 	img.show()
 
 demo()
-print("Just a demo; The ocr data is created on the fly when training")
+print("Just a demo; The ocr data is created on the fly in letter.py when training")
