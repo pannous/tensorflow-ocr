@@ -7,28 +7,24 @@ import numpy as np
 from sys import platform
 from extensions import *
 
-shift_up = 9 # pull small letters up
-shift_left = 2 #
-
 # overfit = False
 overfit = True
 if overfit:
 	print("using OVERFIT DEBUG DATA!!!")
-	# min_size = 10  # 8#12
-	# max_size = 10  # 48
 	min_size = 24
 	max_size = 24
 	max_padding = 8
-	extra_y = 0  # 10 # for oversized letters g,...
-	min_char = 32
 	max_angle = 0
 else:
 	min_size = 8  # 8#12
 	max_size = 28  # 48
 	max_padding=10
-	extra_y = 0 # 10 # for oversized letters g,...
-	min_char=32
 	max_angle=30#40
+
+shift_up = 9 # pull small letters up
+shift_left = 2 #
+min_char = 32 # still keep ascii[0-32] for special data: 'white' 'black' 'noise' background line! unicode
+offset = 32 #0  # vs min_char keep ascii[0-32] for special data
 
 sizes=range(min_size,max_size)
 if min_size==max_size: sizes=[min_size]
@@ -126,7 +122,7 @@ class batch():
 		def norm(letter):
 			return letter.matrix()
 		xs=map(norm, letters) # 1...-1 range
-		if self.target==Target.letter: ys=[one_hot(l.ord,nLetters,min_char) for l in letters]
+		if self.target==Target.letter: ys=[one_hot(l.ord,nLetters,offset) for l in letters]
 		if self.target == Target.size: ys = [l.size for l in letters]
 		if self.target == Target.position: ys = [pos_to_arr(l.pos) for l in letters]
 		return list(xs), list(ys)

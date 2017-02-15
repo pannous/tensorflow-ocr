@@ -69,7 +69,7 @@ net.predict()#random : debug
 
 def predict(mat):
 	try:
-		best=net.predict(mat)
+		best=net.predict(mat)+letter.offset
 		print(chr(best))
 		plt.title("predicted: "+chr(best))
 	except Exception as ex:
