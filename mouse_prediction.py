@@ -23,6 +23,8 @@ system('''/usr/bin/osascript -e 'tell app "Finder" to set frontmost of process "
 i = 0
 width = 256
 height = 256
+size = letter.max_size
+
 
 def get_mouse_position():
 	if sys.platform == 'Windows':
@@ -60,7 +62,7 @@ def convolve(mat):
 #
 # # LOAD MODEL!
 import layer
-net = layer.net(model="denseConv", input_shape=[28,28])
+net = layer.net(model="denseConv", input_shape=[size, size])
 # net = layer.net(model="denseConv", input_shape=[784])
 net.predict()#random : debug
 
@@ -84,7 +86,7 @@ if __name__ == "__main__":
 		# image = ImageGrab.grab([x - 60, y - 20, x + 40, y + 20])
 		# image = ImageGrab.grab([x - 14, y - 14, x + 14, y + 14])
 		# image = ImageGrab.grab([x - 10, y - 10, x + 10, y + 10])
-		size = 28  # 24 pycharm font
+		size = 24  # 24 pycharm font
 		w=h=20
 		image = ImageGrab.grab([x - w/2, y - w / 2, x + h / 2, y + h / 2])
 		# image = ImageGrab.grab([x, y, x + 30, y + 30])
@@ -100,14 +102,16 @@ if __name__ == "__main__":
 
 		plt.matshow(mat, fignum=1)
 		# plt.imshow(image)
-		print(np.max(mat))
-		print(np.min(mat))
-		print(np.average(mat))
+		# print(np.max(mat))
+		# print(np.min(mat))
+		# print(np.average(mat))
 		# convolve(mat)
 		predict(mat)
 
 		plt.draw()
 		plt.pause(0.01)
+		del image
+		del mat
 
 		# k = cv2.waitKey(0) & 0xFF  # 0xFF To get the lowest byte.
 		# if k == 27: exit(0)

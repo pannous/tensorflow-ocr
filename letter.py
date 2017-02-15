@@ -10,8 +10,8 @@ from extensions import *
 shift_up = 9 # pull small letters up
 shift_left = 2 #
 
-overfit = False
-# overfit = True
+# overfit = False
+overfit = True
 if overfit:
 	print("using OVERFIT DEBUG DATA!!!")
 	# min_size = 10  # 8#12
@@ -262,6 +262,8 @@ class letter():
 		format="letter{char='%s',size=%d,font='%s',angle=%d,ord=%d,pos=%s}"
 		return format % (self.char, self.size, self.font, self.angle, ord(self.char), self.pos)
 
+	def __repr__(self):
+		return self.__str__()
 	# def print(self):
 	# 	print(self.__str__)
 	def save(self, path):
