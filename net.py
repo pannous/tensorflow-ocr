@@ -2,7 +2,7 @@ from __future__ import print_function
 
 import time
 import numpy as np
-import tensorflow as tf
+import tensorflow as tf # needs tf > 1.0
 from tensorflow.contrib.tensorboard.plugins import projector  # for 3d PCA/ t-SNE
 from .tensorboard_util import *
 
@@ -410,14 +410,8 @@ class net:
 		# with tf.device(_cpu):
 		# t = tf.verify_tensor_all_finite(t, msg)
 		tf.add_check_numerics_ops()
-		try:
-			self.summaries = tf.summary.merge_all()
-		except:
-			self.summaries = tf.summary.merge_all()
-		try:
-			self.summary_writer = tf.summary.FileWriter(current_logdir(), session.graph)  #
-		except:
-			self.summary_writer = tf.summary.FileWriter(current_logdir(), session.graph)  #
+		self.summaries = tf.summary.merge_all()
+		self.summary_writer = tf.summary.FileWriter(current_logdir(), session.graph)  
 		if not dropout: dropout = 1.  # keep all
 		x = self.x
 		y = self.y
