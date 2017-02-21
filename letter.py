@@ -1,3 +1,4 @@
+# coding=utf-8
 from random import randint
 from PIL import Image, ImageDraw, ImageFont
 import os
@@ -17,9 +18,9 @@ if overfit:
 	max_angle = 0
 else:
 	min_size = 8  # 8#12
-	max_size = 28  # 48
+	max_size = 32  # street view size, above that: scale image down!
 	max_padding=10
-	max_angle=30#40
+	max_angle=45 #! +90deg. with lower probability! see (SVHN) Dataset
 
 shift_up = 9 # pull small letters up
 shift_left = 2 #
@@ -78,6 +79,7 @@ styles=['regular','light','medium','bold','italic']
 from enum import Enum
 
 
+
 class Target(Enum):  # labels
 	letter = 1
 	size = 2
@@ -86,6 +88,24 @@ class Target(Enum):  # labels
 	position = 5
 	style = 6
 	angle = 7
+
+#
+class Kind(Enum):
+	blank = 0
+	letter = 1
+	digit = 2  # special! e.g. House Numbers
+	background = 3
+	line = 4
+	emoji = 5  # special icons
+	colour_image = 6
+	black_and_white_image = 7
+	icon = 8  # 'save', favicons etc
+	latin = 9  # åµ ...
+	unicode = 10  # special :
+	arabic = 11
+	chinese = 12  # also korean, japan ...
+	cyril = 13
+
 
 nClasses={
 	Target.letter: nLetters,  # classification
