@@ -3,43 +3,39 @@
 import layer
 import tensorflow as tf
 
+
+class identity(layer.net):  # baseline 0 ;)
+	def __init__(self):
+		pass
+	def predict(self, eval_data=None, model=None):
+		return eval_data
+
 def baseline(net):
 	# type: (layer.net) -> None
-	net.dense(400, activation=tf.nn.tanh)  # Test; Accuracy:  0.609375
+	net.dense(400, activation=tf.nn.tanh)
 
 
-# over fitting okay: Step 3000 Loss= 0.301323 Accuracy= 1.000 Time= 20s 			Test Accuracy:  1.0"""
-
+# over-fitting okay: Step 3000 Loss= 0.301323 Accuracy= 1.000 Time= 20s 			Test Accuracy:  1.0"""
 def baselineDeep3(net):
 	# type: (layer.net) -> None
 	net.dense(400, depth=3, activation=tf.nn.tanh)
 
+def baselineWide(net):
+	net.dense(hidden=20000, depth=2, dropout=True)
 
-def baselineDeep(net):
-	# type: (layer.net) -> None
-	net.dense(400, depth=20, activation=tf.nn.tanh)
-
-# Step 156000 Loss= 0.871664 Accuracy= 0.700 Time= 1400s 			Test Accuracy:  0.53125 very slow + low
 
 def baselineBatchNorm(net):
 	# type: (layer.net) -> None
-	net.batchnorm()  # start lower, else no effect
+	net.batchnorm()
 	net.dense(400, activation=tf.nn.tanh, bn=1)
+	net.batchnorm()
 
-
-# Test Accuracy:  0.6875 with batch_norm #overfit ok, but unstable!?!
 
 def baselineBatchNormDeep(net):
 	# type: (layer.net) -> None
 	net.batchnorm()  # start lower, else no effect
 	net.dense(400, depth=3, activation=tf.nn.tanh, bn=1)
 
-
-def baselineWide(net):
-	net.dense(hidden=20000, depth=2, dropout=True)
-
-
-# net.dense(hidden=200, depth=5, bn=True)  # BETTER!!
 
 # Interesting: losses dropping, still 0.0 accuracy! => predicting zeros!?!
 size=10

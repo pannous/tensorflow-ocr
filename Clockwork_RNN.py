@@ -1,5 +1,5 @@
 import tensorflow as tf
-import tensorlayer as tl
+# import tensorlayer as tl
 class ClockworkLayer(tl.layers.RNNLayer):
 	""" A clockwork RNN layer.
 
