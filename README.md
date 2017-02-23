@@ -9,6 +9,10 @@ Migrated from https://github.com/pannous/caffe-ocr
 
 `./train_ocr_layer.py` work in progress
 
+### Fun
+
+`./mouse_prediction.py`
+
 ### Usage
 `./not.yet ;)`
 
