@@ -2,7 +2,7 @@ from __future__ import print_function
 
 import time
 import numpy as np
-import tensorflow as tf
+import tensorflow as tf # needs tf > 1.0
 from tensorflow.contrib.tensorboard.plugins import projector  # for 3d PCA/ t-SNE
 from .tensorboard_util import *
 
@@ -152,7 +152,7 @@ class net:
 		self.batchnorm()
 		# self.add(tf.nn.relu(ident)) # nChannels ?
 		self.conv([3, 3, nChannels, nOutChannels], pool=False, dropout=do_dropout, norm=tf.nn.relu)  # None
-		concat = tf.concat(concat_dim=3, values=[ident, self.last_layer])
+		concat = tf.concat(axis=3, values=[ident, self.last_layer])
 		print("concat ", concat.get_shape())
 		self.add(concat)
 
@@ -193,7 +193,7 @@ class net:
 				if dropout: dense1 = tf.nn.dropout(dense1, self.keep_prob)
 				self.add(dense1)
 				self.last_width = width
-				inputs = tf.concat(concat_dim=1, values=[inputs, dense1])
+				inputs = tf.concat(axis=1, values=[inputs, dense1])
 				inputs_width += width
 				depth = depth - 1
 		self.last_width = width
@@ -410,14 +410,8 @@ class net:
 		# with tf.device(_cpu):
 		# t = tf.verify_tensor_all_finite(t, msg)
 		tf.add_check_numerics_ops()
-		try:
-			self.summaries = tf.summary.merge_all()
-		except:
-			self.summaries = tf.summary.merge_all()
-		try:
-			self.summary_writer = tf.summary.FileWriter(current_logdir(), session.graph)  #
-		except:
-			self.summary_writer = tf.summary.FileWriter(current_logdir(), session.graph)  #
+		self.summaries = tf.summary.merge_all()
+		self.summary_writer = tf.summary.FileWriter(current_logdir(), session.graph)  
 		if not dropout: dropout = 1.  # keep all
 		x = self.x
 		y = self.y
