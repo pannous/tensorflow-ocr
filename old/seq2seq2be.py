@@ -38,13 +38,13 @@ def variable_summaries(var, name):
     """Attach a lot of summaries to a Tensor."""
     with tf.name_scope('summaries'):
         mean = tf.reduce_mean(var)
-        tf.scalar_summary('mean/' + name, mean)
+        tf.summary.scalar('mean/' + name, mean)
         with tf.name_scope('stddev'):
             stddev = tf.sqrt(tf.reduce_sum(tf.square(var - mean)))
-        tf.scalar_summary('sttdev/' + name, stddev)
-        tf.scalar_summary('max/' + name, tf.reduce_max(var))
-        tf.scalar_summary('min/' + name, tf.reduce_min(var))
-        tf.histogram_summary(name, var)
+        tf.summary.scalar('sttdev/' + name, stddev)
+        tf.summary.scalar('max/' + name, tf.reduce_max(var))
+        tf.summary.scalar('min/' + name, tf.reduce_min(var))
+        tf.summary.histogram(name, var)
 
 
 def main():
@@ -70,11 +70,11 @@ def main():
     cost = tf.reduce_sum(tf.squared_difference(reshaped_outputs, reshaped_results))
     variable_summaries(cost, 'cost')
     step = tf.train.AdamOptimizer(learning_rate=0.01).minimize(cost)
-    merged = tf.merge_all_summaries()
+    merged = tf.summary.merge_all()
 
     with tf.Session() as session:
-        session.run(tf.initialize_all_variables())
-        writer = tf.train.SummaryWriter("/tmp/tensor/train", session.graph)
+        session.run(tf.global_variables_initializer())
+        writer = tf.summary.FileWriter("/tmp/tensor/train", session.graph)
         costs = []
         for i in xrange(n_iterations):
             batch_costs = []
