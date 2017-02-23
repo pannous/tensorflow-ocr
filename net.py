@@ -92,8 +92,8 @@ class net:
 		with tf.name_scope('state'):
 			self.keep_prob = tf.placeholder(tf.float32, name="dropout_keep_prob")  # 1 for testing! else 1 - dropout
 			self.train_phase = tf.placeholder(tf.bool, name='train_phase')
-			with tf.device(_cpu): self.global_step = tf.Variable(
-				0)  # dont set, feed or increment global_step, tensorflow will do it automatically
+			with tf.device(_cpu): self.global_step = tf.Variable(0)
+			# dont set, feed or increment global_step, tensorflow will do it automatically
 		with tf.name_scope('data'):
 			if self.input_shape and len(self.input_shape) == 2:
 				shape_ = [None, self.input_shape[0], self.input_shape[1]]  # batch:None
@@ -207,12 +207,13 @@ class net:
 		print("N=%d" % N)
 		do_dropout = True  # None  nil to disable dropout, non - zero number to enable dropout and set drop rate
 		# dropRate = self.keep_prob # nil to disable dropout, non - zero number to enable dropout and set drop rate
-		# # channels before entering the first denseblock ??
+		# channels before entering the first denseblock ??
 		# set it to be comparable with growth rate ??
 
-		# nChannels = 16
 		growthRate = 12
-		self.conv([3, 3, 1, nChannels])
+		self.conv([3, 3, 1, nChannels])  # why this
+		# self.conv([1, 3, 3, nChannels]) # and not this?
+
 		# self.add(tf.nn.SpatialConvolution(3, nChannels, 3, 3, 1, 1, 1, 1))
 
 		for i in range(N):
@@ -389,6 +390,7 @@ class net:
 		return tf.cond(self.train_phase, lambda: throughput, lambda: tf.Print(throughput, to_print + [nop()], "OK!"))
 
 	def next_batch(self, batch_size, session, test=False):
+		# self.data either a generator or a data struct with properties .train/test.images/labels
 		try:
 			if test:
 				test_images = self.data.test.images[:batch_size]
