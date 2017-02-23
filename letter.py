@@ -79,8 +79,13 @@ styles=['regular','light','medium','bold','italic']
 
 from enum import Enum
 
+# color_channels = 4  # RGBA
+color_channels = 1  # gray
 
 def random_color():
+	if color_channels<=1:
+		return None #pick(range(-90, 180))
+		# return 'white'  # None #pick(range(-90, 180))
 	r = randint(0, 255)
 	g = randint(0, 255)
 	b = randint(0, 255)
@@ -230,7 +235,7 @@ class letter():
 		# 	return np.array(max_size*(max_size+extra_y))
 
 	def load_font(self):
-		fontPath = self.font if '/' in self.font else letter.fonts_dir + self.font
+		fontPath = self.font if '/' in self.font else fonts_dir + self.font
 		try:
 			fontPath = fontPath.strip()
 			ttf_font = ImageFont.truetype(fontPath, self.size)
