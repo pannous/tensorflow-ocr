@@ -49,7 +49,7 @@ net = layer.net(denseConv, input_width=size, output_width=2, learning_rate=learn
 
 # net.train(data=data,steps=50000,dropout=0.6,display_step=1,test_step=1) # debug
 # net.train(data=data, steps=training_steps,dropout=0.6,display_step=5,test_step=20) # test
-net.train(data=data, dropout=.6, display_step=1, test_step=10) # run resume
+net.train(data=data, dropout=.6, display_step=5, test_step=20) # run resume
 
 # net.predict() # nil=random
 # net.generate(3)  # nil=random
