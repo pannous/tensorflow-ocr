@@ -10,14 +10,15 @@ print("tf.__version__:%s" % tf.__version__)
 
 start = int(time.time())
 
-# clear_tensorboard()
-set_tensorboard_run(auto_increment=True)
-run_tensorboard(restart=False)
-
 gpu = True
 # gpu = False
 debug = False  # summary.histogram  : 'module' object has no attribute 'histogram' WTF
-debug = True  # histogram_summary ...
+# debug = True  # histogram_summary ...
+
+# clear_tensorboard()
+if debug:
+	set_tensorboard_run(auto_increment=True)
+	run_tensorboard(restart=False)
 
 visualize_cluster = False  # NOT YET: 'ProjectorConfig' object has no attribute 'embeddings'
 
@@ -375,17 +376,18 @@ class net:
 		# Launch the graph
 
 	# noinspection PyAttributeOutsideInit
-	def regression(self, dimensions):
+	def regression(self, dimensions, tolerance=3.):
 		# self.dense(100)
 		with tf.name_scope("regression"):
 			self.dense(dimensions)
 			self.y = tf.placeholder(tf.float32, [None, dimensions], name="target_y")  # self.batch_size
-			print("regression 'accuracy' might not be indicative, watch loss")
+			print("REGRESSION 'accuracy' might not be indicative, watch loss")
 			with tf.name_scope("train"):
 				# self.learning_rate = tf.Variable(0.5, trainable=False)
 				self.cost = tf.reduce_mean(tf.pow(self.y - self.last_layer, 2))
 				self.optimize = tf.train.AdamOptimizer(self.learning_rate).minimize(self.cost)
-				self.accuracy = tf.maximum(0., 1 - tf.sqrt(self.cost))
+				self.accuracy = tf.maximum(0., 100 - tf.sqrt(self.cost)/tolerance)
+				# self.accuracy = 1 - abs(self.y - self.last_layer)
 				tf.add_to_collection('train_ops', [self.learning_rate, self.cost, self.optimize, self.accuracy])
 
 	def debug_print(self, throughput, to_print=[]):
