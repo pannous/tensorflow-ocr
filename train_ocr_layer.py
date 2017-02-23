@@ -34,7 +34,8 @@ def denseConv(net):
 	print("Building dense-net")
 	net.reshape(shape=[-1, size, size, letter.color_channels])  # Reshape input picture
 	net.buildDenseConv(nBlocks=1)
-	net.classifier() # 10 classes auto
+	# net.rnn(text.max_word_length)
+	net.regression(dimensions=2) # for
 
 
 """ Baseline tests to see that your model doesn't have any bugs and can learn small test sites without efforts """

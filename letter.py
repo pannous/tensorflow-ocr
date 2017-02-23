@@ -100,8 +100,9 @@ class Target(Enum):  # labels
 	position = 5
 	style = 6
 	angle = 7
+	text = 8 
 
-#
+
 class Kind(Enum):
 	blank = 0
 	letter = 1
@@ -113,13 +114,14 @@ class Kind(Enum):
 	black_and_white_image = 7
 	icon = 8  # 'save', favicons etc
 	latin = 9  # åµ ...
-	unicode = 10  # special :
+	mixed = 10 # needs disentangling
 	arabic = 11
 	chinese = 12  # also korean, japan ...
 	cyril = 13
+	unicode = 14
 
 
-nClasses={
+nClasses={ # / dimensions
 	Target.letter: nLetters,  # classification
 	Target.font: len(fontnames),  # classification
 	Target.style: len(styles),  # classification
@@ -131,7 +133,28 @@ nClasses={
 	# Target.mean: 1,  # -1 0 1
 }
 
-# test_word=9 # use 5 even for speaker etc
+
+class TargetType(Enum):
+	classification=1,
+	regression = 2,  # also multi regression? :
+	multi_regression = 3,
+	vector_generation = 4,  #
+	image_generation = 5,
+	string = 6  # special vector
+	map = 7,
+
+
+targetTypes={
+	Target.letter: TargetType.classification,
+	Target.font: TargetType.classification, # or string
+	Target.style: TargetType.classification,
+	Target.size: TargetType.regression,
+	Target.angle: TargetType.regression,
+	Target.position: TargetType.multi_regression, # x,y or box
+	Target.color: TargetType.multi_regression, # multi
+	Target.text: TargetType.string,
+	# Target.word: TargetType.string,
+}
 
 
 def pos_to_arr(pos):
