@@ -375,16 +375,18 @@ class net:
 		# Launch the graph
 
 	# noinspection PyAttributeOutsideInit
-	def regression(self, param):
+	def regression(self, dimensions):
 		# self.dense(100)
-		self.dense(param)
-		self.y = tf.placeholder(tf.float32, [None, param], name="target_y")  # self.batch_size
-		with tf.name_scope("train"):
-			self.learning_rate = tf.Variable(0.5, trainable=False)
-			self.cost = tf.reduce_mean(tf.pow(self.y - self.last_layer, 2))
-			self.optimize = tf.train.AdamOptimizer(self.learning_rate).minimize(self.cost)
-			self.accuracy = tf.maximum(0., 1 - tf.sqrt(self.cost))
-			tf.add_to_collection('train_ops', [self.learning_rate, self.cost, self.optimize, self.accuracy])
+		with tf.name_scope("regression"):
+			self.dense(dimensions)
+			self.y = tf.placeholder(tf.float32, [None, dimensions], name="target_y")  # self.batch_size
+			print("regression 'accuracy' might not be indicative, watch loss")
+			with tf.name_scope("train"):
+				# self.learning_rate = tf.Variable(0.5, trainable=False)
+				self.cost = tf.reduce_mean(tf.pow(self.y - self.last_layer, 2))
+				self.optimize = tf.train.AdamOptimizer(self.learning_rate).minimize(self.cost)
+				self.accuracy = tf.maximum(0., 1 - tf.sqrt(self.cost))
+				tf.add_to_collection('train_ops', [self.learning_rate, self.cost, self.optimize, self.accuracy])
 
 	def debug_print(self, throughput, to_print=[]):
 		return tf.cond(self.train_phase, lambda: throughput, lambda: tf.Print(throughput, to_print + [nop()], "OK!"))
