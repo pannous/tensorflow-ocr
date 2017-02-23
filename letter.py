@@ -26,6 +26,7 @@ shift_up = 9 # pull small letters up
 shift_left = 2 #
 min_char = 32 # still keep ascii[0-32] for special data: 'white' 'black' 'noise' background line! unicode
 offset = 32 #0  # vs min_char keep ascii[0-32] for special data
+extra_y=0
 
 sizes=range(min_size,max_size)
 if min_size==max_size: sizes=[min_size]
@@ -79,6 +80,12 @@ styles=['regular','light','medium','bold','italic']
 from enum import Enum
 
 
+def random_color():
+	r = randint(0, 255)
+	g = randint(0, 255)
+	b = randint(0, 255)
+	a = randint(0, 255)
+	return (r, g, b, a)
 
 class Target(Enum):  # labels
 	letter = 1
@@ -128,7 +135,7 @@ def pos_to_arr(pos):
 
 class batch():
 
-	def __init__(self, batch_size=64,target=Target.letter):
+	def __init__(self,target=Target.letter, batch_size=64):
 		self.batch_size=batch_size
 		self.target= target
 		self.shape=[max_size * max_size+extra_y, nClasses[target]]
@@ -185,13 +192,6 @@ class letter():
 	def projection(self):
 		return self.matrix(),self.ord
 
-	def random_color(self):
-		r=randint(0,255)
-		g=randint(0,255)
-		b=randint(0,255)
-		a=randint(0,255)
-		return (r,g,b,a)
-
 	def get_style(self,font):
 		if 'BI' in font: return 'bold&italic'
 		if 'IB' in font: return 'bold&italic'
@@ -229,14 +229,17 @@ class letter():
 		# except:
 		# 	return np.array(max_size*(max_size+extra_y))
 
-	def image(self):
-		fontPath = self.font if '/' in self.font else fonts_dir+self.font
+	def load_font(self):
+		fontPath = self.font if '/' in self.font else letter.fonts_dir + self.font
 		try:
-			fontPath= fontPath.strip()
+			fontPath = fontPath.strip()
 			ttf_font = ImageFont.truetype(fontPath, self.size)
 		except:
-			raise Exception("BAD FONT: "+fontPath)
+			raise Exception("BAD FONT: " + fontPath)
+		return ttf_font
 
+	def image(self):
+		ttf_font = self.load_font()
 		padding = self.pos
 		text = self.char
 		size = ttf_font.getsize(text)
@@ -250,7 +253,7 @@ class letter():
 		draw = ImageDraw.Draw(img)
 		# -
 		draw.text((padding['x']-shift_left, padding['y']-shift_up), text, font=ttf_font, fill=self.color)
-		if (self.angle>0 or self.angle<0) and self.size>20:
+		if self.angle:
 			rot = img.rotate(self.angle, expand=1).resize(size)
 			if self.back:
 				img = Image.new('RGBA', size, self.back)  # background_color
