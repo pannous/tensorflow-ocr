@@ -15,6 +15,8 @@ class Target(Enum):  # labels
 	text = 2
 	box = 3 # start,end
 	position = 4
+	position_hot = 40
+	position_x = 44
 	start = 4 #position
 	end = 5 #position
 	style = 6
@@ -78,26 +80,37 @@ class batch(data):
 		if self.target == Target.word: ys=  [many_hot(word.text, num_characters) for w in words]
 		if self.target == Target.size: ys = [l.size for l in words]
 		if self.target == Target.position: ys = [pos_to_arr(l.pos) for l in words]
+		if self.target == Target.position_x: ys = [l.pos['x'] for l in words]
+		if self.target == Target.position_hot:
+			ys = [many_hot(pos_to_arr(l.pos), canvas_size, limit=2,swap=True) for l in words]
 		return xs, ys
-		# return list(xs), list(ys)
 
 
 def pick(xs):
 	return xs[randint(0,len(xs)-1)]
 
 
-def many_hot(items, num_classes, offset, limit=max_word_length):
+def many_hot(items, num_classes, offset=0, limit=max_word_length, swap=False):
 	labels_many_hot = []
 	for item in items:
 		labels_one_hot = numpy.zeros(num_classes)
-		labels_one_hot[item - offset] = 1
+		if item >= num_classes:
+			print("item > num_classes  %s > %d  ignoring" % (item, limit))
+		else:
+			labels_one_hot[item - offset] = 1
 		labels_many_hot.append(labels_one_hot)
-		if len(labels_many_hot)>limit:
-			print("item > limit %s > %d"%(item,limit))
+		if len(labels_many_hot) > limit:
+			print("#items > limit   %s > %d  ignoring rest"%(len(labels_many_hot),limit))
 			break
-	if len(labels_many_hot) < limit:
+	l = len(labels_many_hot)
+	if l < limit:
 		pad(labels_many_hot,limit,true)
-
+	if l > limit:
+		raise Exception("Too many items: %d > %d"%(l,limit))
+	labels_many_hot = np.array(labels_many_hot)
+	if swap:
+		labels_many_hot = labels_many_hot.swapaxes(0,1)  # .transpose([0,1]) theano.dimshuffle
+	# print(labels_many_hot.shape)
 	return labels_many_hot
 
 
