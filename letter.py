@@ -36,7 +36,7 @@ nLetters=len(letterz)
 
 def find_fonts():
 	if platform == "darwin":
-		os.system("mdfind -name '.ttf' | grep '.ttf$' |grep -v 'Noto\|NISC' > fonts.list")
+		os.system("mdfind -name '.ttf' | grep '.ttf$' |grep -v 'Noto\|NISC' | iconv -f utf-8 -t ascii  > fonts.list")
 	else:
 		os.system("locate '.ttf' | grep '.ttf$' |grep -v 'mstt' > fonts.list")
 
