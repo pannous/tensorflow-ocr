@@ -468,7 +468,7 @@ class net:
 		feed_dict = {self.x: test_images, self.y: test_labels, self.keep_prob: 1., self.train_phase: False}
 		# accuracy,summary= self.session.run([self.accuracy, self.summaries], feed_dict=feed_dict)
 		accuracy, summary = session.run([self.accuracy, self.summaries], feed_dict, run_options, run_metadata)
-		print('\t' * 3 + "Test Accuracy: ", accuracy)
+		print('\t' * 3 + "Test Accuracy: {:.2f}".format( accuracy))
 		self.summary_writer.add_run_metadata(run_metadata, 'step #%03d' % step)
 		self.summary_writer.add_summary(summary, global_step=step)
 		if accuracy == 1.0:
