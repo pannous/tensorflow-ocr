@@ -507,7 +507,10 @@ class net:
 			return self
 		self.session.run(tf.global_variables_initializer())
 		print("loading checkpoint %s" % checkpoint.model_checkpoint_path)
-		loader.restore(self.session, tf.train.latest_checkpoint(checkpoint_dir))
+		try:
+			loader.restore(self.session, tf.train.latest_checkpoint(checkpoint_dir))
+		except:
+			pass
 		# loader.restore(self.session , checkpoint) #Unable to get element from the feed as bytes!  HUH??
 		self.input = self.x = tf.get_collection('inputs')[0]
 		self.target = self.y = tf.get_collection('targets')[0]

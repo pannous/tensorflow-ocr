@@ -1,6 +1,13 @@
+#!/usr/bin/env python
 import sys
-import Tkinter  # Tkinter could be supported by all systems
-app = Tkinter.Tk() #  must be declared before Mat
+
+try:
+	import Tkinter  # Tkinter could be supported by all systems
+	app = Tkinter.Tk() #  must be declared before Mat
+except Exception as ex:
+	print("%s" % ex)
+	print(" PLEASE DO:")
+	print(" sudo apt-get install python-tk  # for Tkinter ")
 
 import tensorflow as tf
 import numpy
@@ -70,7 +77,7 @@ net.predict()#random : debug
 def predict(mat):
 	try:
 		best=net.predict(mat)+letter.offset
-		print(chr(best))
+		print("interpreted as: %d %s" % (best , chr(best)))
 		plt.title("predicted: "+chr(best))
 	except Exception as ex:
 		print("%s"%ex)
@@ -92,7 +99,7 @@ if __name__ == "__main__":
 		# image = ImageGrab.grab([x, y, x + 30, y + 30])
 		# help(image.show) Displays this image via preview. This method is mainly intended for debugging purposes
 		array = numpy.array(image.getdata()) # (1, 4000, 4)
-		mat = array.reshape(image.height, image.width, 4)[:, :, 0]
+		mat = array.reshape(image.height, image.width,-1)[:, :, 0]
 		if size> image.height:
 			mat=numpy.pad(mat, (0,  size- image.height), 'constant', constant_values=255) # 1==white!
 

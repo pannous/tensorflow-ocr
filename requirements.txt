@@ -2,15 +2,17 @@
 # pip install --user -r requirements.txt
 # pip install ImageDraw
 
-PIL
+# PIL
 Pillow
 # ImageDraw
 # ImageFont
-
 tensorflow
-
 dill
-
 layer
 # or git clone --recursive for layer submodule
 
+# ONLY FOR MOUSE PREDICTION:
+pyscreenshot
+matplotlib
+# sudo apt-get install python-tk  # Tkinter
+# sudo apt-get install python3-tk # Tkinter
