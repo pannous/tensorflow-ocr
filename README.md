@@ -7,5 +7,8 @@ However if you are a student or otherwise interested in artificial intelligence 
 especially since you can detect the text under your mouse pointer with `mouse_prediction.py`
 
 To get started with a minimal example similar to the famous MNIST try
-`./train_letters.py`
+`./train_letters.py` ;
 it automatically generates letters for all different font types from your computer in all different shapes and trains on it.
+
+For state of the art text recognition with deep learning check out
+[seglink](https://github.com/dengdan/seglink)
