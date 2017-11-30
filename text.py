@@ -9,6 +9,8 @@ import letter
 from extensions import *
 
 num_characters = letter.nLetters # ascii: 127
+word_file = "/usr/share/dict/words"
+WORDS = open(word_file).read().splitlines()
 
 class Target(Enum):  # labels
 	word = 1
@@ -25,9 +27,14 @@ class Target(Enum):  # labels
 
 
 
+def random_word():
+	return pick(WORDS)
+	pass # Don't (just) use dictionary because we really want to ocr passwords too
+
+
+
 def pos_to_arr(pos):
 	return [pos['x'],pos['y']]
-
 
 
 max_size = letter.max_size
@@ -61,7 +68,7 @@ class data():
 class batch(data):
 
 	def __init__(self, target=Target.word, batch_size=64):
-		super().__init__()
+		#super().__init__()
 		self.batch_size=batch_size
 		self.target= target
 		self.shape=[max_size * max_size, max_word_length * letter.nLetters]
@@ -77,7 +84,7 @@ class batch(data):
 			# type: (word) -> ndarray
 			return word.matrix() # dump  the whole abstract representation as an image
 		xs=list(map(norm, words)) # 1...-1 range
-		if self.target == Target.word: ys=  [many_hot(word.text, num_characters) for w in words]
+		if self.target == Target.word: ys=  [many_hot(w.text, num_characters) for w in words]
 		if self.target == Target.size: ys = [l.size for l in words]
 		if self.target == Target.position: ys = [pos_to_arr(l.pos) for l in words]
 		if self.target == Target.position_x: ys = [l.pos['x'] for l in words]
@@ -89,10 +96,11 @@ class batch(data):
 def pick(xs):
 	return xs[randint(0,len(xs)-1)]
 
-
-def many_hot(items, num_classes, offset=0, limit=max_word_length, swap=False):
+def many_hot(word, num_classes, offset=0, limit=max_word_length, swap=False):
 	labels_many_hot = []
-	for item in items:
+		# for item in items:
+	for letter in word:
+		item=ord(letter)
 		labels_one_hot = numpy.zeros(num_classes)
 		if item >= num_classes:
 			print("item > num_classes  %s > %d  ignoring" % (item, limit))
@@ -114,13 +122,6 @@ def many_hot(items, num_classes, offset=0, limit=max_word_length, swap=False):
 	return labels_many_hot
 
 
-def random_word():
-	word_file = "/usr/share/dict/words"
-	WORDS = open(word_file).read().splitlines()
-	return pick(WORDS)
-	pass # Don't (just) use dictionary because we really want to ocr passwords too
-
-
 class word():
 
 
@@ -138,8 +139,8 @@ class word():
 		self.angle= args['angle'] if 'angle' in args else 0 #pick(range(-max_angle,max_angle))
 		self.pos	= args['pos'] if 'pos' in args else {'x':pick(range(0,canvas_size)),'y':pick(range(0, canvas_size))}
 		# self.style= args['style'] if 'style' in args else self.get_style(self.font)# pick(styles)
-		self.invert = args['invert'] if 'invert' in args else pick([-1, 0, 1])
 		self.text = args['text'] if 'text' in args else random_word()
+		self.invert = args['invert'] if 'invert' in args else pick([-1, 0, 1])
 		# if chaotic: # captcha style (or syntax highlighting?)
 		# self.letters=[letter.letter(args,char=char) for char in self.word] # almost java style ;)
 		# else: one word, one style!
@@ -184,7 +185,10 @@ class word():
 			fontPath = fontPath.strip()
 			ttf_font = ImageFont.truetype(fontPath, self.size)
 		except:
-			raise Exception("BAD FONT: " + fontPath)
+			print("BAD FONT: " + fontPath,self.size)
+			# raise
+			exit()
+			# raise Exception("BAD FONT: " + fontPath,self.size)
 		return ttf_font
 
 	def show(self):

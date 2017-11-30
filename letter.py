@@ -36,9 +36,10 @@ nLetters=len(letterz)
 
 def find_fonts():
 	if platform == "darwin":
-		os.system("mdfind -name '.ttf' | grep '.ttf$' |grep -v 'Noto\|NISC' | iconv -f utf-8 -t ascii  > fonts.list")
+		os.system("mdfind -name '.ttf' | grep '.ttf$' | iconv -f utf-8 -t ascii  > fonts.list")
 	else:
-		os.system("locate '.ttf' | grep '.ttf$' |grep -v 'mstt' > fonts.list")
+		os.system("locate '.ttf' | grep '.ttf$'  > fonts.list")
+	return readlines("fonts.list")
 
 # copy all 'good' fonts to one directory if you want
 # os.system("mkdir -p "+fonts_dir)
@@ -46,6 +47,11 @@ def find_fonts():
 # fonts={} # cache all?
 def check_fonts():
 	for font in fontnames:
+		# if not exists(font.strip()):
+			# print("old font "+font)
+			# fontnames.remove(font)
+			# continue
+		# print("check_font ",font)
 		try:
 			if not '/' in font :
 				ImageFont.truetype(fonts_dir+font, max_size)
@@ -54,7 +60,7 @@ def check_fonts():
 				ImageFont.truetype(font, max_size)
 				ImageFont.truetype(font, min_size)
 		except:
-			# print("BAD font "+font)
+			print("BAD font "+font)
 			fontnames.remove(font)
 
 if not os.path.exists("fonts.list"):
@@ -64,15 +70,18 @@ else:
 	print("Using cashed fonts.list")
 
 fonts_dir="/data/fonts/"
-fontnames=readlines("fonts.list")
-# check_fonts()
+
+try:
+	fontnames=readlines("fonts.list")
+	if len(fontnames)==0:raise
+except:
+	print("searching for local fonts")
+	fontnames=find_fonts()
+
 check_fonts()
+writelines("fonts.list",  fontnames)
 if overfit:
-	fontnames=fontnames[0:1] # ONLY 2 to overfit
-
-if overfit:
-	fontnames=['Menlo.ttc']#Arial.ttf']
-
+	fontnames=fontnames[0:2] # ONLY 2 to overfit
 
 styles=['regular','light','medium','bold','italic']
 # Regular Medium Heavy Demi 'none','normal', Subsetted Sans #,'underline','strikethrough']

@@ -53,11 +53,6 @@ def pick(xs):
 	return xs[randint(len(xs))]
 
 
-def readlines(source):
-	print("open(source).readlines()")
-	return map(str.strip, open(source).readlines())
-
-
 def reverse(x):
 	y = x.reverse()
 	return y or x
@@ -1399,9 +1394,17 @@ def read(file):
 	return open(file, 'rt').read()
 
 
-def readlines(file):
-	return open(file, 'rt').readlines()
 
+def readlines(source):
+	# print("open(source).readlines()")
+	return list(map(str.strip, open(source).readlines()))
+
+# def readlines(file):
+# 	return open(file, 'rt').readlines()
+
+
+def writelines(file, xs):
+	open(file, 'wt').write("\n".join(xs))
 
 def read_binary(file):
 	return open(file, 'rb').read()
