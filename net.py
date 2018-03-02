@@ -442,7 +442,7 @@ class net:
 				acc, summary = session.run([self.accuracy, self.summaries], feed_dict=feed)
 				# self.summary_writer.add_summary(summary, step) # only test summaries for smoother curve
 				print("\rStep {:d} Loss= {:.6f} Accuracy= {:.3f} Time= {:d}s".format(step, loss, acc, seconds), end=' ')
-				if str(loss) == "nan": return print("\nLoss gradiant explosion, exiting!!!")  # restore!
+				if str(loss) == "nan": return print("\nLoss gradiant explosion, exiting!")  # restore!
 			if step % test_step == 0: self.test(step)
 			if step % save_step == 0 and step > 0:
 				print("SAVING snapshot %s" % snapshot)
@@ -479,12 +479,12 @@ class net:
 		checkpoint = tf.train.latest_checkpoint(checkpoint_dir)
 		if checkpoint:
 			if self.name and not self.name in checkpoint:
-				print("IGNORING checkpoint of other run : " + checkpoint + " !!!")
+				print("IGNORING checkpoint of other run : " + checkpoint + " !")
 				checkpoint = None
 		else:
 			print("NO checkpoint, nothing to resume")
 		if checkpoint:
-			print("LOADING " + checkpoint + " !!!")
+			print("LOADING " + checkpoint + " !")
 			try:
 				persister = tf.train.Saver(tf.global_variables())
 				persister.restore(session, checkpoint)
@@ -492,7 +492,7 @@ class net:
 				return True
 			except Exception as ex:
 				print(ex)
-				print("CANNOT LOAD checkpoint %s !!!" % checkpoint)
+				print("CANNOT LOAD checkpoint %s !" % checkpoint)
 		return False
 
 	def restore(self):  # name

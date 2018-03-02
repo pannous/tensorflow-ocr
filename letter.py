@@ -11,7 +11,7 @@ from extensions import *
 # overfit = False
 overfit = True
 if overfit:
-	print("using OVERFIT DEBUG DATA!!!")
+	print("using OVERFIT DEBUG DATA!")
 	min_size = 24
 	max_size = 24
 	max_padding = 8

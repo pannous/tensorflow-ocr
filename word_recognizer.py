@@ -6,7 +6,7 @@
 # https://github.com/fchollet/keras/pull/4115/files
 
 # AtrousConv1D = AtrousConvolution1D
-# YAY!!!!!!!!!!
+# YAY!!!!
 
 # https://github.com/nrTQgc/deep-anpr/commit/adfbbe7f3deeaa39bdecc36d8398434b76fdf211
 #  fork confusion : ^^  13 days ago BUUUUT: # https://github.com/nrTQgc/deep-anpr  two months ago!?!?!?!

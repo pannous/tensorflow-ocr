@@ -537,7 +537,7 @@ class Class:
 		return str(self)  # TODO!?
 
 
-# WOW YAY WORKS!!!!!
+# WOW YAY WORKS!!!
 # ONLY VIA EXPLICIT CONSTRUCTOR!
 # NOOOO!! BAAAD! isinstance(my_xlist,list) FALSE !!
 
@@ -728,10 +728,10 @@ class xlist(list):
 	def character(self, nr):
 		return self.item(nr)
 
-	def item(self, nr):  # -1 AppleScript style !!! BUT list[0] !!!
+	def item(self, nr):  # -1 AppleScript style ! BUT list[0] !
 		return self[xlist(self).fix_int(nr)]
 
-	def word(self, nr):  # -1 AppleScript style !!! BUT list[0] !!!):
+	def word(self, nr):  # -1 AppleScript style ! BUT list[0] !):
 		return self[xlist(self).fix_int(nr)]
 
 	def invert(self):  # ! Self modifying !
@@ -920,7 +920,7 @@ class xstr(str):
 	def synsets(self, param):
 		pass
 
-	def is_noun(self):  # expensive!!!):
+	def is_noun(self):  # expensive!):
 		# Sequel::InvalidOperation Invalid argument used for IS operator
 		return self.synsets('noun') or self.gsub(r's$', "").synsets('noun')  # except False
 
@@ -1480,7 +1480,7 @@ def find_class(match=""):  # all
 # def __getattr__(self, attr):
 #     import sys
 #     import math
-#  # ruby method_missing !!!
+#  # ruby method_missing !
 #     import inspect
 #     for name, obj in inspect.getmembers(sys.modules['math']):
 #         if name==attr: return obj
