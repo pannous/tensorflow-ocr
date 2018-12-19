@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import sys
 
+# import gtk
+# gtk.set_interactive(False)
 try:
 	import Tkinter  # Tkinter could be supported by all systems
 	app = Tkinter.Tk() #  must be declared before Mat
@@ -17,7 +19,7 @@ import pyscreenshot as ImageGrab
 
 from os import system
 
-import letter
+import recognize
 
 import matplotlib.pyplot as plt
 plt.matshow([[1, 0], [0, 1]], fignum=1)
@@ -94,8 +96,16 @@ if __name__ == "__main__":
 		# image = ImageGrab.grab([x - 14, y - 14, x + 14, y + 14])
 		# image = ImageGrab.grab([x - 10, y - 10, x + 10, y + 10])
 		size = 24  # 24 pycharm font
-		w=h=20
+		w=512
+		h=64
 		image = ImageGrab.grab([x - w/2, y - w / 2, x + h / 2, y + h / 2])
+		tensor = np.array(image) / 255.0  # RGBA: h*w*4
+		print(tensor.shape)
+		# tensor=cv2.resize(tensor,(64,512))
+		tensor = tensor.transpose(2, 1, 0)  # 4*w*h
+		tensor = tensor[:, :, :, np.newaxis]
+		words = predict([tensor])
+
 		# image = ImageGrab.grab([x, y, x + 30, y + 30])
 		# help(image.show) Displays this image via preview. This method is mainly intended for debugging purposes
 		array = numpy.array(image.getdata()) # (1, 4000, 4)
@@ -109,10 +119,6 @@ if __name__ == "__main__":
 
 		plt.matshow(mat, fignum=1)
 		# plt.imshow(image)
-		# print(np.max(mat))
-		# print(np.min(mat))
-		# print(np.average(mat))
-		# convolve(mat)
 		predict(mat)
 
 		plt.draw()

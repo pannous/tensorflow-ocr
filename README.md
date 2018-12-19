@@ -1,10 +1,12 @@
 # tensorflow-ocr
 🖺 OCR using tensorflow with attention
 
-*This is an experimental project and not ready for production in any sense*
+# Installation
+`pip -r requirements.txt`
+You can detect the text under your mouse pointer with `mouse_prediction.py`
 
-However if you are a student or otherwise interested in artificial intelligence technology this might be interesting for you.
-especially since you can detect the text under your mouse pointer with `mouse_prediction.py`
+To combine our approach with real world images we forked the [EAST](https://github.com/quasiris/EAST) boundary boxing.
+
 
 To get started with a minimal example similar to the famous MNIST try
 `./train_letters.py` ;

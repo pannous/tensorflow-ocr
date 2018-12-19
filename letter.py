@@ -50,11 +50,10 @@ def find_fonts():
 # fonts={} # cache all?
 def check_fonts():
 	for font in fontnames:
-		# if not exists(font.strip()):
-			# print("old font "+font)
-			# fontnames.remove(font)
-			# continue
-		# print("check_font ",font)
+		if not exists(font.strip()):
+			print("old font "+font)
+			fontnames.remove(font)
+			continue
 		try:
 			if not '/' in font :
 				ImageFont.truetype(fonts_dir+font, max_size)
@@ -62,6 +61,7 @@ def check_fonts():
 			else:
 				ImageFont.truetype(font, max_size)
 				ImageFont.truetype(font, min_size)
+			print("check_font OK ",font)
 		except:
 			print("BAD font "+font)
 			fontnames.remove(font)
@@ -91,7 +91,7 @@ styles=['regular','light','medium','bold','italic']
 
 from enum import Enum
 
-# color_channels = 4  # RGBA
+# color_channels = 4 Useless: just use 6 'gray' channels! # RGBA
 color_channels = 1  # gray
 
 def random_color():
