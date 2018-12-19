@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import itertools
-import os
 import sys
 
 import numpy as np
 from PIL import Image
-from keras import backend as K
 from keras.layers import Input, Dense, Activation, Dropout
 from keras.layers import Reshape
 from keras.layers.convolutional import Conv2D, MaxPooling2D
@@ -17,8 +15,11 @@ from keras.models import Model
 weight_file = 'best_weights.h5'
 alphabet = u'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 '
 
-def predict_tensor(images):
+global model
+model=None
 
+def load_model():
+  global model
   # Model similar to image_ocr.py
   rnn_size = 1024
   dropout = 0.2
@@ -58,6 +59,8 @@ def predict_tensor(images):
 
   model.load_weights(weight_file, reshape=True, by_name=True)
 
+def predict_tensor(images):
+  if not model: load_model()
   prediction = model.predict(images, batch_size=1)
   result = decode_results(prediction)
   return result
