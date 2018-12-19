@@ -241,9 +241,7 @@ if __name__ == "__main__":
 			# print(np.average(mat))
 			# print(np.max(mat))
 			# print(np.min(mat))
-			#
 		except KeyboardInterrupt:
-			print("HOW??")
 			exit()
 			# return
 			break

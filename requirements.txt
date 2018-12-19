@@ -12,6 +12,10 @@ dill
 layer
 # or git clone --recursive for layer submodule
 
+# in training:
+cairocffi
+editdistance
+
 # ONLY FOR MOUSE PREDICTION:
 pyscreenshot
 matplotlib
