@@ -11,7 +11,12 @@ pip install -r requirements.txt
 
 # Evaluation
 
-You can detect the text under your mouse pointer with `mouse_prediction.py`
+You can detect the text under your mouse pointer with 
+`mouse_prediction.py`
+
+it takes 10 seconds to
+
+`text_recognizer.py`
 
 To combine our approach with real world images we forked the [EAST](https://github.com/quasiris/EAST) boundary boxing.
 

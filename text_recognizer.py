@@ -12,8 +12,12 @@ from keras.layers.merge import add, concatenate
 from keras.layers.recurrent import GRU
 from keras.models import Model
 
-weight_file = 'best_weights.h5'
-alphabet = u'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 '
+# weight_file = 'best_weights.h5'
+weight_file = 'current_weights.h5'
+
+# alphabet = u'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 '
+alphabet = u'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZäöüÄÖÜß0123456789!@#$%^&*()[]{}-_=+\\|"\'`;:/.,?><~ '
+
 
 global model
 model=None
@@ -61,7 +65,7 @@ def load_model():
 
 def predict_tensor(images):
   if not model: load_model()
-  prediction = model.predict(images, batch_size=1)
+  prediction = model.predict(images, batch_size=1,verbose=1)
   result = decode_results(prediction)
   return result
 
