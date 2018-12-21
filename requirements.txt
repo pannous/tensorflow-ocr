@@ -8,6 +8,7 @@ Pillow
 # ImageDraw
 # ImageFont
 tensorflow
+#tensorflow-gpu
 keras
 dill
 layer

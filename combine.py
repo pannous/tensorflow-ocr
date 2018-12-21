@@ -1,6 +1,5 @@
 import requests
 import json
-import PIL 
 from PIL import Image # Image.open(test_image)
 # import cv2 # cv2.imwrite(output_path, img)
 # import skimage #skimage.io.imread
@@ -10,7 +9,7 @@ class Box(object):
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-image_file='test_image2.png'
+image_file='test_image.png'
 test_file='test_out.png'
 image = Image.open(image_file)
 
