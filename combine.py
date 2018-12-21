@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import requests
 import json
 from PIL import Image # Image.open(test_image)
