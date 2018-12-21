@@ -18,7 +18,7 @@ image = Image.open(image_file)
 with open(image_file, 'rb') as f:
     r = requests.post('http://0.0.0.0:8769/?json=1', files={'image': f})
     print(r.text)
-    ocr=json.loads(r.text)
+    ocr=json.loads(r.text.replace("&#34;",'"'))
     for line in ocr['text_lines']:
       print(line)
       b=Box(**line)
