@@ -565,6 +565,7 @@ def train(run_name, start_epoch, stop_epoch, img_w):
         # sgd = Adam()
 
     model = Model(inputs=[input_data, labels, input_length, label_length], outputs=loss_out)
+    model.save(os.path.join(MODEL_DIR, 'model%03d.h5' % (start_epoch + 1)))
 
     # for l in model.layers:
     #     if not "conv" in l.name and not "dense1" in l.name:
@@ -591,6 +592,7 @@ def train(run_name, start_epoch, stop_epoch, img_w):
 def last_epoch():
     maxi=0
     for date in os.listdir(MODEL_DIR):
+        if not os.path.isdir(date): continue
         for f in os.listdir(MODEL_DIR+"/"+date):
             if not f.startswith("weights"): continue
             if len(f)==12:

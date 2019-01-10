@@ -54,10 +54,10 @@ if __name__ == "__main__":
     # todo make model robust to extra text
     argmax = numpy.argmax(lines) # most white
     argmin = numpy.argmin(lines) # most black
-    if(argmax<argmin):
-      mat[:,:argmax,:]=1. # fill white above
-    if(argmin<argmax):
-      mat[:,argmax:,:]=1. # fill white below
+    # if(argmax<argmin):
+    #   mat[:,:argmax,:]=1. # fill white above
+    # if(argmin<argmax):
+    #   mat[:,argmax:,:]=1. # fill white below
     # todo: what if invert image!?
 
     tensor = mat
@@ -87,7 +87,7 @@ if __name__ == "__main__":
     histogram = numpy.histogram(mat, bins=10, range=None, normed=False, weights=None, density=None)
     print(argmax)
 
-    words = predict_tensor([tensor])
+    words = predict_tensor(tensor)
     if len(words) > 0:
       best = words[0]
     else:

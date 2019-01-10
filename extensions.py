@@ -227,6 +227,16 @@ def is_dir(x, must_exist=True):
 #   print "\n"
 #   x
 
+
+def exists(x):
+	return os.path.isfile(x)
+
+def is_dir(x):
+	return os.path.isfile(x) and os.path.isdir(x)
+
+def is_file(x):#Is it a file, or a directory?
+	return os.path.isfile(x) and not os.path.isdir(x)
+
 def is_a(self, clazz):
 	if self is clazz: return True
 	try:
