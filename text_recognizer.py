@@ -4,7 +4,7 @@ import itertools
 import sys
 
 import numpy as np
-from PIL import Image
+from PIL import Image # python -m pip install --upgrade Pillow  # WTF
 from keras.models import load_model
 
 # weight_file = 'best_weights.h5'
@@ -25,9 +25,16 @@ def load_model():
   model = load_model(weight_file)
   # model.load_weights(weight_file, reshape=True, by_name=True)
 
-def predict_tensor(images):
+def predict_tensor(tensor):
+  if len(tensor.shape) == 2:
+    tensor = tensor.transpose((1, 0))
+    tensor = tensor[np.newaxis, :, :, np.newaxis]
+  elif len(tensor.shape) == 3:
+    tensor = tensor.transpose((2, 1, 0))  # 4*w*h
+    tensor = tensor[:, :, :, np.newaxis]
+
   if not model: load_model()
-  prediction = model.predict(images, batch_size=1,verbose=1)
+  prediction = model.predict(tensor, batch_size=1, verbose=1)
   result = decode_results(prediction)
   return result
 
@@ -65,8 +72,6 @@ if __name__ == '__main__':
   # image = image.transpose(Image.FLIP_TOP_BOTTOM)
   tensor = np.array(image) / 255.0  # RGBA: h*w*4
   print(tensor.shape)
-  # tensor=cv2.resize(tensor,(64,512))
-  tensor = tensor.transpose(2, 1, 0)  # 4*w*h
-  tensor = tensor[:, :, :, np.newaxis]
+
   words = predict_tensor([tensor])
   print(words)

@@ -12,6 +12,7 @@ Pillow
 
 #tensorflow
 #tensorflow-gpu
+#pipi2 https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow-1.5.0-cp27-none-linux_x86_64.whl # NO SSE4.1
 
 keras
 dill
