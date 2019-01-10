@@ -9,7 +9,10 @@ from keras.models import load_model
 
 # weight_file = 'best_weights.h5'
 # weight_file = 'current_weights.h5'
-weight_file = 'weights_ascii.h5'
+
+# weight_file = 'weights_ascii.h5' # learned on noisy data
+# weight_file = 'weights_ascii_easy.h5' # no freckles
+weight_file = 'weights_ascii_clean.h5' # pure text
 
 chars = u'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZäöüÄÖÜß0123456789!@#$%^&*()[]{}-_=+\\|"\'`;:/.,?><~ '
 
