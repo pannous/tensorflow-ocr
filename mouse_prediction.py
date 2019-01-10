@@ -1,13 +1,11 @@
 #!/usr/bin/env python
+import numpy
+
+import numpy as np
 import sys
 
 import matplotlib.pyplot as plt
-import numpy
-import numpy as np
-# import gtk
-# gtk.set_interactive(False)
 import pyscreenshot
-import tensorflow as tf
 
 from text_recognizer import predict_tensor
 
@@ -16,34 +14,26 @@ try:
 except Exception as ex:
   import tkinter
 
+if sys.platform == 'Windows':
+  import win32api # GetCursorPos
+
 app = tkinter.Tk()  # must be declared before Mat
 
-# import cv2
 plt.matshow([[1, 0], [0, 1]], fignum=1)
-# print(dir(plt))
-# help(plt)
-# ax.patch.set_facecolor('None') or ax.patch.set_visible(False).
 plt.draw()
 
 # if mac
 # system('''/usr/bin/osascript -e 'tell app "Finder" to set frontmost of process "Python" to true' ''')
 
 i = 0
-width = 256
-height = 256
-
 
 def get_mouse_position():
   if sys.platform == 'Windows':
-    import win32api
     x, y = win32api.GetCursorPos()
   else:
     x, y = app.winfo_pointerxy()
   return x, y
 
-
-get_mouse_position()
-session = tf.Session()
 
 if __name__ == "__main__":
   while 1:
@@ -60,15 +50,19 @@ if __name__ == "__main__":
     # image = pyscreenshot.grab([x, y, x + w, y + h])
     mat = np.array(image) / 255.0  # RGBA: h*w*4
 
-
     lines=numpy.average(mat, axis=1)
+    # todo make model robust to extra text
     argmax = numpy.argmax(lines) # most white
     argmin = numpy.argmin(lines) # most black
     if(argmax<argmin):
       mat[:,:argmax,:]=1. # fill white above
+    if(argmin<argmax):
+      mat[:,argmax:,:]=1. # fill white below
+    # todo: what if invert image!?
 
     tensor = mat
     print(tensor.shape)
+    # tensor=cv2.resize(tensor,(64,512))
     if len(tensor.shape) == 2:
       tensor = tensor.transpose((1, 0))
       tensor = tensor[np.newaxis, :, :, np.newaxis]
@@ -77,26 +71,18 @@ if __name__ == "__main__":
       tensor = tensor.transpose((2, 1, 0))  # 4*w*h
       tensor = tensor[:, :, :, np.newaxis]
 
-    # tensor=cv2.resize(tensor,(64,512))
+    # mat = 1 - 2 * mat / 255.  # norm [-1,1] !
+    # mat = 1 - mat / 255.  # norm [0,1]! black=1
+    # mat = mat / 255.  # norm [0,1]! black=0 (default)
+
     """
 
  TEST Text 01234 Hello     <- point your mouse here
  
 """
-    # help(image.show) Displays this image via preview. This method is mainly intended for debugging purposes
-    # array = numpy.array(image.getdata())  # (1, 4000, 4)
-    #
-    # mat = array.reshape(image.height, image.width, -1)[:, :, 0]
-    # if size> image.height:
-    # 	mat=numpy.pad(mat, (0,  size- image.height), 'constant', constant_values=255) # 1==white!
-
-    # mat = 1 - 2 * mat / 255.  # norm [-1,1] !
-    # mat = 1 - mat / 255.  # norm [0,1]! black=1
-    # mat = mat / 255.  # norm [0,1]! black=0 (default)
 
     plt.matshow(mat, fignum=1)
     # plt.imshow(image)
-
 
     histogram = numpy.histogram(mat, bins=10, range=None, normed=False, weights=None, density=None)
     print(argmax)
