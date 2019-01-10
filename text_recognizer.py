@@ -1,23 +1,16 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 import itertools
 import sys
 
 import numpy as np
 from PIL import Image
-from keras.layers import Input, Dense, Activation, Dropout
-from keras.layers import Reshape
-from keras.layers.convolutional import Conv2D, MaxPooling2D
-from keras.layers.merge import add, concatenate
-from keras.layers.recurrent import GRU
-from keras.models import Model, load_model 
+from keras.models import load_model
 
 # weight_file = 'best_weights.h5'
 # weight_file = 'current_weights.h5'
 weight_file = 'weights_ascii.h5'
 
-
-# chars = u'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 '
 chars = u'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZäöüÄÖÜß0123456789!@#$%^&*()[]{}-_=+\\|"\'`;:/.,?><~ '
 
 
@@ -64,7 +57,7 @@ if __name__ == '__main__':
   if (len(sys.argv) > 1):
     test_image = sys.argv[1]
   else:
-    test_image = "test_image2.png"
+    test_image = "test_image.png"
   image = Image.open(test_image)
   # image = image.transpose(Image.FLIP_TOP_BOTTOM)
   tensor = np.array(image) / 255.0  # RGBA: h*w*4

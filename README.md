@@ -14,7 +14,8 @@ pip install -r requirements.txt
 You can detect the text under your mouse pointer with 
 `mouse_prediction.py`
 
-it takes 10 seconds to
+it takes 10 seconds to load the network and startup, then it should return multiple results per second
+. 
 
 `text_recognizer.py`
 

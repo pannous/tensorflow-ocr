@@ -1,14 +1,18 @@
-numpy
 # pip install -r requirements.txt
 # pip install --user -r requirements.txt
 # pip install ImageDraw
 
-# PIL
+numpy
+
+# PIL -> Pillow
 Pillow
+
 # ImageDraw
 # ImageFont
-tensorflow
+
+#tensorflow
 #tensorflow-gpu
+
 keras
 dill
 layer
