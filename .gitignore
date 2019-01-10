@@ -9,3 +9,7 @@ checkpoints/*
 1999
 .idea/
 *.pyc
+last
+data
+weights
+.AppleDouble
