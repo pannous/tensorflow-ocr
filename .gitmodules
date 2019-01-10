@@ -1,8 +1,8 @@
-[submodule "layer"]
-	path = layer
-	url = git@github.com:pannous/layer.git
-	branch = master
-[submodule "EAST"]
-	path = EAST
-	url = https://github.com/quasiris/EAST
-	branch = master
+# [submodule "layer"]
+# 	path = layer
+# 	url = git@github.com:pannous/layer.git
+# 	branch = master
+# [submodule "EAST"]
+# 	path = EAST
+# 	url = https://github.com/quasiris/EAST
+# 	branch = master
