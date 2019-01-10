@@ -4,16 +4,16 @@ import itertools
 import sys
 
 import numpy as np
-import keras.models
+from keras.models import load_model
 from PIL import Image # python -m pip install --upgrade Pillow  # WTF
 
 # weight_file = 'best_weights.h5'
 # weight_file = 'current_weights.h5'
 
-# weight_file = 'weights_ascii.h5' # learned on noisy data
+weight_file = 'weights_ascii.h5' # learned on noisy data
 # weight_file = 'weights_ascii_easy.h5' # no freckles
 # weight_file = 'weights_ascii_clean.h5' # pure text
-model_file = 'model1000.h5'
+# weight_file = None # use model weights
 
 chars = u'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZäöüÄÖÜß0123456789!@#$%^&*()[]{}-_=+\\|"\'`;:/.,?><~ '
 
@@ -21,10 +21,11 @@ chars = u'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZäöüÄÖÜß0123
 global model
 model=None
 
-def load_model():
+def init_model(model_file="current_model.h5"):
   global model
-  model = keras.models.load_model(model_file)
-  # model.load_weights(weight_file, reshape=True, by_name=True)
+  model = load_model(model_file)
+  model.summary()
+  model.load_weights(weight_file, reshape=True, by_name=True)
 
 def predict_tensor(tensor):
   if len(tensor.shape) == 2:
@@ -35,7 +36,7 @@ def predict_tensor(tensor):
     tensor = tensor[:, :, :, np.newaxis]
 
   print(tensor.shape)
-  if not model: load_model()
+  if not model: init_model()
   prediction = model.predict([tensor], batch_size=1, verbose=1)
   result = decode_results(prediction)
   return result
@@ -73,6 +74,5 @@ if __name__ == '__main__':
   image = Image.open(test_image)
   # image = image.transpose(Image.FLIP_TOP_BOTTOM)
   tensor = np.array(image) / 255.0  # RGBA: h*w*4
-  print(tensor.shape)
   words = predict_tensor(tensor)
   print(words)

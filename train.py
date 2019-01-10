@@ -540,8 +540,11 @@ def train(run_name, start_epoch, stop_epoch, img_w):
     dense2 = Dense(img_gen.get_output_size(), kernel_initializer='he_normal', name='dense2')
     inner = dense2(concatenate([gru_2, gru_2b]))
     y_pred = Activation('softmax', name='softmax')(inner)
-    Model(inputs=input_data, outputs=y_pred).summary()
+    model0=Model(inputs=input_data, outputs=y_pred)
+    model0.summary()
+    model0.save(os.path.join(MODEL_DIR, 'model%03d.h5' % (start_epoch + 1)))
 
+# training extension:
     labels = Input(name='the_labels', shape=[img_gen.absolute_max_string_len], dtype='float32')
     input_length = Input(name='input_length', shape=[1], dtype='int64')
     label_length = Input(name='label_length', shape=[1], dtype='int64')
@@ -565,7 +568,6 @@ def train(run_name, start_epoch, stop_epoch, img_w):
         # sgd = Adam()
 
     model = Model(inputs=[input_data, labels, input_length, label_length], outputs=loss_out)
-    model.save(os.path.join(MODEL_DIR, 'model%03d.h5' % (start_epoch + 1)))
 
     # for l in model.layers:
     #     if not "conv" in l.name and not "dense1" in l.name:
