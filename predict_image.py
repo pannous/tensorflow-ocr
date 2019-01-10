@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #!/usr/bin/python
 import layer
 import letter
