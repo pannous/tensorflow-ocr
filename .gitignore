@@ -1,11 +1,11 @@
-fonts.list
+fonts.list*
 checkpoints
 denseConv*
 clear-logs.sh
 ggraph
 update_and_train.sh
 checkpoint*
-checkpoints/denseConv10.ckpt-0.data-00000-of-00001
-checkpoints/denseConv10.ckpt-0.data-00000-of-00001
-1999 .idea/
-extensions.pyc letter.pyc recognize.pyc text_recognizer.pyc
+checkpoints/*
+1999
+.idea/
+*.pyc

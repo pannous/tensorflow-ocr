@@ -437,7 +437,7 @@ class VizCallback(keras.callbacks.Callback):
               % (num, mean_ed, mean_norm_ed))
 
     def on_epoch_end(self, epoch, logs={}):
-        self.model.save_weights(os.path.join(self.output_dir, 'weights%03d.h5' % (epoch)))
+        self.model.save_weights(os.path.join(self.output_dir, 'weights%03d.h5' % (epoch+1)))
         self.show_edit_distance(256)
         word_batch = next(self.text_img_gen)[0]
         res = decode_batch(self.test_func, word_batch['the_input'][0:self.num_display_words])
